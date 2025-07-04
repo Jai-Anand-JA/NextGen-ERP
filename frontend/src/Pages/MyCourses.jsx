@@ -2,8 +2,9 @@ import React from 'react';
 import subjectsData from '../Dummydata'; // Adjust the path if needed
 
 const MyCourses = () => {
+    const [sideBarOpen, setSideBarOpen] = React.useState(true);
   return (
-    <div className="p-4">
+    <div className={`p-4 bg-gray-800 min-h-screen text-white ${sideBarOpen ? 'ml-56' : 'ml-20'}`}>
       <h2 className="text-xl font-bold mb-6 text-white">My Courses</h2>
 
       <div className="space-y-4">
