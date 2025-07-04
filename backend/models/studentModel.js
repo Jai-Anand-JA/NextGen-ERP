@@ -14,6 +14,19 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    rollNumber: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    class: {
+        type: String,
+        required: true
+    },
+    section: {
+        type: String,
+        required: true
+    },
     role: {
         type: String,
         default: 'Student',
@@ -57,6 +70,13 @@ const studentSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    cgpa: {
+        type: Number,
+        default: 0.0,
+        min: 0.0,
+        max: 10.0
+    },
+    
 });
 
 const Student = mongoose.model('Student', studentSchema);
