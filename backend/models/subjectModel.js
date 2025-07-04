@@ -31,12 +31,12 @@ const subjectSchema = new mongoose.Schema({
         enum:['even', 'odd']
     },
 
-    faculty: {
+    faculty:[ {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Faculty',
         required: true
-    },
-
+    }],
+    
 });
 
 const Subject = mongoose.model('Subject', subjectSchema);
