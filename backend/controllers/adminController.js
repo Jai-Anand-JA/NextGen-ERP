@@ -27,6 +27,7 @@ export const createStudent = async (req, res) => {
                     class: data.class,
                     section: data.section,
                     role: 'Student',
+                    gender: data.gender,
                     phone: data.phone,
                     age: data.age,
                     year: data.year,
