@@ -4,18 +4,30 @@ const NoticeBoard = ({ notices }) => {
   return (
     <div className="bg-base-200 p-4 rounded-lg shadow">
       <h3 className="text-lg font-bold mb-3">Notices</h3>
-      <div className="space-y-3">
-        {notices.map((notice, index) => (
-          <div key={index} className="flex items-start gap-2 border-b border-gray-700 pb-2">
-            <span className="w-2 h-2 rounded-full bg-white mt-1"></span>
-            <div>
-              <p className="font-semibold text-white truncate">{notice.title}</p>
-              <p className="text-sm text-gray-400 truncate">{notice.content}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+        <hr className="border-gray-300 mb-4" />
+     {notices?.length > 0 ? (
+        <div className="bg-base-100 border border-base-300 rounded-2xl shadow overflow-hidden">
+          <ul className="divide-y divide-base-300">
+            {notices.map((item, idx) => (
+              <li key={idx} className="p-8 hover:bg-base-200 transition">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-base-content font-medium text-lg">{item.title}</h3>
+                  <span className="text-sm text-base-content/60">
+                    {new Date(item.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-base-content mb-3">{item.content}</p>
+                <div className="text-sm text-base-content/60 italic">
+                  Audience: {item.noticeFor}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="text-center py-10 text-base-content/50">No notices sent yet.</div>
+      )}
+     </div>
   );
 };
 

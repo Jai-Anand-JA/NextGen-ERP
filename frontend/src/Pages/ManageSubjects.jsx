@@ -1,147 +1,243 @@
-import React, { useState } from 'react';
-import useAuthStore from '../store/authStore';
-const ManageSubjects = () => {
-  const [departments] = useState(['CSE', 'ECE', 'ME']);
-  const [faculties] = useState(['Dr. A. Verma', 'Prof. B. Singh', 'Dr. C. Sharma', 'Dr. D. Mehta']);
+import React, { useState, useEffect } from "react";
+import useAuthStore from "../store/authStore";
+import { axiosInstance } from "../lib/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
-  const [courses, setCourses] = useState([
-    { code: 'CSF307', name: 'Technical Training 2', department: 'CSE', faculty: 'Dr. A. Verma' },
-    { code: 'EC301', name: 'Digital Systems', department: 'ECE', faculty: 'Prof. B. Singh' },
-    { code: 'ME205', name: 'Thermodynamics', department: 'ME', faculty: 'Dr. C. Sharma' },
-  ]);
+const ManageSubjects = () => {
+  const { departments, faculties, getAllData, sideBarOpen, subjects } =
+    useAuthStore();
 
   const [newCourse, setNewCourse] = useState({
-    code: '',
-    name: '',
-    department: '',
-    faculty: '',
+    code: "",
+    name: "",
+    department: "",
+    credits: "",
+    year: "",
+    semester: "",
+    faculty: [],
   });
 
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
-  const handleFacultyChange = (index, newFaculty) => {
-    const updated = [...courses];
-    updated[index].faculty = newFaculty;
-    setCourses(updated);
+  useEffect(() => {
+    getAllData();
+  }, [getAllData]);
+
+  const handleAddCourse = async () => {
+    const { code, name, department, credits, year, semester, faculty } = newCourse;
+
+    if (!code || !name || !department || !credits || !year || !semester || faculty.length === 0) {
+      toast.error("Please fill in all fields and select at least one faculty");
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.post("/api/admin/create-subject", newCourse);
+      if (res.status === 200 || res.status === 201) {
+        await getAllData();
+        setShowModal(false);
+        setNewCourse({
+          code: "",
+          name: "",
+          department: "",
+          credits: "",
+          year: "",
+          semester: "",
+          faculty: [],
+        });
+        toast.success("Subject added successfully");
+      }
+    } catch (err) {
+      console.error("Error adding course:", err.message);
+      toast.error("Failed to add subject");
+    }
   };
 
-  const handleAddCourse = () => {
-    if (!newCourse.code || !newCourse.name || !newCourse.department || !newCourse.faculty) return;
-    setCourses([...courses, newCourse]);
-    setNewCourse({ code: '', name: '', department: '', faculty: '' });
-    setShowModal(false);
+  const handleFacultySelect = (e) => {
+    const id = e.target.value;
+    const isChecked = e.target.checked;
+
+    setNewCourse((prev) => ({
+      ...prev,
+      faculty: isChecked
+        ? [...prev.faculty, id]
+        : prev.faculty.filter((fid) => fid !== id),
+    }));
   };
 
-  const { sideBarOpen } = useAuthStore();
+  const handleDeleteSubject = async (subjectId) => {
+    try {
+      const res = await axiosInstance.delete(`/api/admin/delete-subject/${subjectId}`);
+      if (res.status === 200) {
+        await getAllData();
+        toast.success("Subject deleted successfully");
+      }
+    } catch (error) {
+      console.error("Failed to delete subject:", error);
+      toast.error("Failed to delete subject");
+    }
+  };
+
   return (
-    <div className={`p-6 bg-base-200 min-h-screen text-base-content transition-all duration-300 ${sideBarOpen ? 'ml-36' : 'ml-18'}`}>
-      {/* Header */}
+    <div
+      className={`p-6 bg-base-200 min-h-screen text-base-content transition-all duration-300 ${
+        sideBarOpen ? "ml-36" : "ml-18"
+      }`}
+    >
       <div className="flex justify-between items-center mb-6 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-base-content">Manage Courses</h1>
+        <h1 className="text-2xl font-bold">Manage Subjects</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-primary text-white px-6 py-2 rounded hover:bg-primary-focus transition"
+          className="bg-primary text-white px-6 py-2 rounded"
         >
-          + Add Course
+          + Add Subject
         </button>
       </div>
 
-      {/* Table */}
-      <div className="max-w-6xl mx-auto overflow-x-auto rounded-lg border border-base-300 shadow bg-base-100">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-base-200 text-base-content font-semibold">
-            <tr>
-              <th className="px-4 py-3 border border-base-300 w-[90px]">Code</th>
-              <th className="px-4 py-3 border border-base-300">Course Name</th>
-              <th className="px-4 py-3 border border-base-300">Department</th>
-              <th className="px-4 py-3 border border-base-300">Faculty Assigned</th>
-            </tr>
-          </thead>
-          <tbody>
-            {courses.map((course, idx) => (
-              <tr key={idx} className="hover:bg-base-200">
-                <td className="px-4 py-2 border border-base-300 font-semibold">{course.code}</td>
-                <td className="px-4 py-2 border border-base-300">{course.name}</td>
-                <td className="px-4 py-2 border border-base-300">{course.department}</td>
-                <td className="px-4 py-2 border border-base-300">
-                  <select
-                    className="bg-base-200 p-2 rounded border border-base-300"
-                    value={course.faculty}
-                    onChange={(e) => handleFacultyChange(idx, e.target.value)}
-                  >
-                    {faculties.map((faculty, index) => (
-                      <option key={index} value={faculty}>
-                        {faculty}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Subject Cards */}
+      <div className="space-y-4 px-4">
+        {subjects?.map((subj, idx) => (
+          <div
+            key={idx}
+            className="w-full bg-gray-800 text-white rounded-lg shadow p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+          >
+            {/* Subject Details */}
+            <div>
+              <h3 className="text-xl font-semibold">
+                {subj.name}{" "}
+                <span className="text-sm text-gray-400">({subj.code})</span>
+              </h3>
+              <div className="text-sm text-gray-300 mt-1 space-y-1">
+                <p>Dept: {subj.department}</p>
+                <p>Credits: {subj.credits}</p>
+                <p>
+                  Year: {subj.year} | Semester: {subj.semester}
+                </p>
+                <p>
+                  Faculty:{" "}
+                  {subj.faculty?.length > 0
+                    ? subj.faculty.map((f) => f?.name).join(", ")
+                    : "Unassigned"}
+                </p>
+              </div>
+            </div>
+
+            {/* Button Section */}
+            <div className="flex gap-2 justify-start md:justify-end">
+              <button
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-medium transition"
+                onClick={() => handleDeleteSubject(subj._id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-base-100 p-6 rounded-xl w-full max-w-md shadow-xl border border-base-300">
-            <h2 className="text-xl font-bold mb-4 text-base-content">Add New Course</h2>
+            <h2 className="text-xl font-bold mb-4">Add Subject</h2>
 
             <input
               type="text"
-              placeholder="Course Code (e.g., CSF307)"
-              className="w-full p-2 border border-base-300 rounded mb-3 bg-base-200 text-base-content"
+              placeholder="Code"
+              className="input input-bordered w-full mb-2"
               value={newCourse.code}
-              onChange={(e) => setNewCourse({ ...newCourse, code: e.target.value.toUpperCase() })}
-              required
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, code: e.target.value })
+              }
             />
             <input
               type="text"
-              placeholder="Course Name"
-              className="w-full p-2 border border-base-300 rounded mb-3 bg-base-200 text-base-content"
+              placeholder="Name"
+              className="input input-bordered w-full mb-2"
               value={newCourse.name}
-              onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })}
-              required
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, name: e.target.value })
+              }
+            />
+            <input
+              type="number"
+              placeholder="Credits"
+              className="input input-bordered w-full mb-2"
+              value={newCourse.credits}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, credits: e.target.value })
+              }
             />
 
             <select
-              className="w-full p-2 border border-base-300 rounded mb-3 bg-base-200 text-base-content"
+              className="input input-bordered w-full mb-2"
               value={newCourse.department}
-              onChange={(e) => setNewCourse({ ...newCourse, department: e.target.value })}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, department: e.target.value })
+              }
             >
               <option value="">Select Department</option>
-              {departments.map((dept, index) => (
-                <option key={index} value={dept}>
-                  {dept}
+              {departments?.map((dept) => (
+                <option key={dept._id} value={dept.name}>
+                  {dept.name}
                 </option>
               ))}
             </select>
 
             <select
-              className="w-full p-2 border border-base-300 rounded mb-4 bg-base-200 text-base-content"
-              value={newCourse.faculty}
-              onChange={(e) => setNewCourse({ ...newCourse, faculty: e.target.value })}
+              className="input input-bordered w-full mb-2"
+              value={newCourse.year}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, year: e.target.value })
+              }
             >
-              <option value="">Assign Faculty</option>
-              {faculties.map((fac, index) => (
-                <option key={index} value={fac}>
-                  {fac}
-                </option>
-              ))}
+              <option value="">Select Year</option>
+              <option value="First">First</option>
+              <option value="Second">Second</option>
+              <option value="Third">Third</option>
+              <option value="Fourth">Fourth</option>
             </select>
+
+            <select
+              className="input input-bordered w-full mb-2"
+              value={newCourse.semester}
+              onChange={(e) =>
+                setNewCourse({ ...newCourse, semester: e.target.value })
+              }
+            >
+              <option value="">Select Semester</option>
+              <option value="odd">Odd</option>
+              <option value="even">Even</option>
+            </select>
+
+            <div className="mb-4">
+              <p className="font-semibold mb-1">Assign Faculty</p>
+              {faculties?.map((fac) => (
+                <label
+                  key={fac._id}
+                  className="flex items-center space-x-2 mb-1"
+                >
+                  <input
+                    type="checkbox"
+                    value={fac._id}
+                    checked={newCourse.faculty.includes(fac._id)}
+                    onChange={handleFacultySelect}
+                  />
+                  <span>{fac.name}</span>
+                </label>
+              ))}
+            </div>
 
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-base-200 border border-base-300 rounded hover:bg-base-300 text-base-content"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
-              <button
-                onClick={handleAddCourse}
-                className="px-4 py-2 bg-success text-white rounded hover:bg-success-content"
-              >
+              <button onClick={handleAddCourse} className="btn btn-primary">
                 Add
               </button>
             </div>

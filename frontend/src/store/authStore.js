@@ -14,6 +14,8 @@ const useAuthStore = create((set, get) => ({
   subjects: null,
   students: null,
   faculties: null,
+  timetable: null,
+  attendance: null,
   departments: null,
   isLoading: true,
 
@@ -63,7 +65,6 @@ const useAuthStore = create((set, get) => ({
   },
 
   checkAuth: async () => {
-
     set({ isCheckingAuth: true });
     try {
       const response = await axiosInstance.get('/api/auth/check-auth');
@@ -88,7 +89,7 @@ const useAuthStore = create((set, get) => ({
         userId: null,
       });
     } finally {
-      set({ isCheckingAuth: false});
+      set({ isCheckingAuth: false });
     }
   },
 
@@ -107,16 +108,18 @@ const useAuthStore = create((set, get) => ({
   getAllData: async () => {
     set({ isLoading: true });
     try {
-      const [studentsRes, facultiesRes, departmentsRes] = await Promise.all([
+      const [studentsRes, facultiesRes, departmentsRes, subjectsRes] = await Promise.all([
         axiosInstance.get('/api/admin/get-students'),
         axiosInstance.get('/api/admin/get-faculty'),
         axiosInstance.get('/api/admin/get-departments'),
+        axiosInstance.get('/api/admin/get-subjects'),
       ]);
 
       set({
         students: studentsRes.data || [],
         faculties: facultiesRes.data || [],
         departments: departmentsRes.data || [],
+        subjects: subjectsRes.data || [],
       });
     } catch (error) {
       console.error('Data fetching error:', error.message);
@@ -124,6 +127,7 @@ const useAuthStore = create((set, get) => ({
         students: [],
         faculties: [],
         departments: [],
+        subjects: [],
       });
     } finally {
       set({ isLoading: false });
@@ -132,14 +136,46 @@ const useAuthStore = create((set, get) => ({
 
   getNotices: async () => {
     try {
-      const res = await axiosInstance.get('/api/admin/get-notifications');
-      if (res.status === 200) {
+      let res;
+      const role = get().userrole;
+
+      if (role === 'Admin') {
+        res = await axiosInstance.get('/api/admin/get-notifications');
+      } else if (role === 'Faculty') {
+        res = await axiosInstance.get('/api/faculty/notices');
+      } else if (role === 'Student') {
+        res = await axiosInstance.get('/api/student/notices');
+      }
+
+      if (res?.status === 200) {
         set({ notices: res.data });
       }
     } catch (error) {
       console.error('Failed to fetch notices:', error.message);
     }
   },
+
+  getTimeTable : async ()=>{
+    try{
+        let res;
+        const role = get().userrole;
+        if(role === 'Admin'){
+            res = await axiosInstance.get('/api/admin/timetable');
+        } else if(role === 'Faculty'){
+            res = await axiosInstance.get('/api/faculty/timetable');
+        } else if(role === 'Student'){
+            res = await axiosInstance.get('/api/student/timetable');
+        }
+        if(res?.status === 200){
+            set({timetable: res.data});
+        }
+
+    }
+    catch(error){
+        console.error('Failed to fetch timetable:', error.message);
+        set({timetable: null});
+    }
+  }
 }));
 
 export default useAuthStore;

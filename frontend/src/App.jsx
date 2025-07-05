@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Loader } from 'lucide-react';
+import  {Toaster} from "react-hot-toast";
 // Student Pages
 import StudentDashboard from "./Pages/StudentDashboard.jsx";
 import { MyCourses } from "./Pages/MyCourses.jsx";
@@ -53,7 +54,8 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <div>
+       <BrowserRouter>
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Navigate to="/sign-in" />} />
@@ -240,7 +242,10 @@ function App() {
           element={<h1>403 - Unauthorized Access</h1>}
         />
       </Routes>
+      
     </BrowserRouter>
+     <Toaster  />
+    </div>
   );
 }
 
