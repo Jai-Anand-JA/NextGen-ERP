@@ -7,6 +7,8 @@ import TimeTable from '../models/timeTableModel.js';
 import Faculty from '../models/facultyModel.js';
 import Notice from '../models/noticeModel.js';
 
+
+
 export const getFacultySubjects = async (req, res) => {
   const facultyId = req.user.id; // from auth middleware
 
@@ -273,35 +275,62 @@ export const updateAttendance = async (req, res) => {
   }
 };
 
-
+const gradePointMap = {
+  A: 10,
+  B: 8,
+  C: 6,
+  D: 4,
+  F: 0,
+};
 
 export const assignGrade = async (req, res) => {
   const { studentId, subjectId, grade } = req.body;
   const facultyId = req.user.id;
 
   try {
-    // Validate subject and faculty relationship
+    // Validate subject
     const subject = await Subject.findById(subjectId);
     if (!subject) return res.status(404).json({ message: 'Subject not found' });
 
     if (!subject.faculty.includes(facultyId)) {
-      return res.status(403).json({ message: 'You are not authorized to assign grades for this subject' });
+      return res.status(403).json({ message: 'Not authorized to assign grade for this subject' });
     }
 
+    // Check for existing grade
     const existing = await Grade.findOne({ studentId, subjectId });
     if (existing) return res.status(409).json({ message: 'Grade already assigned. Use update instead.' });
 
+    // Save new grade
     const newGrade = new Grade({ studentId, subjectId, facultyId, grade });
     await newGrade.save();
 
-    res.status(201).json({ message: 'Grade assigned successfully'});
+    // Fetch all grades of student
+    const allGrades = await Grade.find({ studentId }).populate('subjectId', 'credits');
+
+    let totalPoints = 0;
+    let totalCredits = 0;
+
+    allGrades.forEach(({ grade, subjectId }) => {
+      const gradePoint = gradePointMap[grade];
+      const credit = subjectId.credits;
+      totalPoints += gradePoint * credit;
+      totalCredits += credit;
+    });
+
+    const cgpa = totalCredits === 0 ? 0 : Math.round((totalPoints / totalCredits) * 100) / 100;
+
+    // Update student's CGPA
+    await Student.findByIdAndUpdate(studentId, { cgpa });
+
+    res.status(201).json({ message: 'Grade assigned and CGPA updated', cgpa });
   } catch (error) {
-    console.error('Error assigning grade:', error);
+    console.error('Error assigning grade and updating CGPA:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-// PUT /grades/:id
+
+
 export const updateGrade = async (req, res) => {
   const gradeId = req.params.id;
   const facultyId = req.user.id;
@@ -315,10 +344,31 @@ export const updateGrade = async (req, res) => {
       return res.status(403).json({ message: 'You are not authorized to update this grade' });
     }
 
+    // Update grade
     existing.grade = grade;
     await existing.save();
 
-    res.status(200).json({ message: 'Grade updated successfully', grade: existing });
+    // Recalculate CGPA for the student
+    const studentId = existing.studentId;
+
+    const allGrades = await Grade.find({ studentId }).populate('subjectId', 'credits');
+
+    let totalPoints = 0;
+    let totalCredits = 0;
+
+    allGrades.forEach(({ grade, subjectId }) => {
+      const gradePoint = gradePointMap[grade];
+      const credit = subjectId.credits;
+      totalPoints += gradePoint * credit;
+      totalCredits += credit;
+    });
+
+    const cgpa = totalCredits === 0 ? 0 : Math.round((totalPoints / totalCredits) * 100) / 100;
+
+    await Student.findByIdAndUpdate(studentId, { cgpa });
+
+    res.status(200).json({ message: 'Grade updated and CGPA recalculated', cgpa, grade: existing });
+
   } catch (error) {
     console.error('Error updating grade:', error);
     res.status(500).json({ message: 'Internal server error' });
