@@ -1,8 +1,2 @@
 @import "tailwindcss";
 @plugin "daisyui";
-
-.react-calendar {
-  background-color: white;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-}
