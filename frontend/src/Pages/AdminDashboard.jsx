@@ -1,67 +1,59 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import useAuthStore from '../store/authStore';
-import NoticeBoard from '../components/NoticeBoard'; // Adjust path if needed
+import NoticeBoard from '../components/NoticeBoard';
 import { Users, User, Shield, Building2 } from 'lucide-react';
 
+
 function AdminDashboard() {
-  const { sideBarOpen } = useAuthStore();
+  const {
+    sideBarOpen,
+    getAllData,
+    getNotices,
+    faculties,
+    students,
+    departments,
+    notices,
+    checkAuth
+  } = useAuthStore();
 
-  const notices = [
-    {
-      title: 'End Term Examination End Term',
-      content: "Lorem Ipsum has been the industry's standard dummy",
-    },
-    {
-      title: 'Holidays Holidays Holidays Holidays',
-      content: 'It is a long established fact that a reader will be',
-    },
-    {
-      title: 'Admissions Admissions Admissions...',
-      content: 'Piece of classical Latin literature from 45 BC, making it',
-    },
-  ];
-
+   useEffect(() => {
+     checkAuth();
+      getAllData();
+      getNotices();
+   }, [checkAuth, getAllData, getNotices]);
   return (
-    <div className={`transition-all duration-300 min-h-screen p-6 bg-base-100 text-white ${sideBarOpen ? 'ml-56' : 'ml-20'}`}>
-      <h2 className="text-xl font-bold mb-6">Dashboard</h2>
+    <div
+      className={`transition-all duration-300 min-h-screen p-6 bg-base-100 text-white ${
+        sideBarOpen ? 'ml-56' : 'ml-20'
+      }`}
+    >
+      <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
 
-      {/* === Top Stats Cards === */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-base-200 rounded-lg p-4 flex items-center gap-3 shadow">
-          <Users className="w-6 h-6 text-orange-400" />
-          <div>
-            <p className="text-sm text-gray-400">Faculty</p>
-            <h3 className="text-lg font-bold">3</h3>
-          </div>
-        </div>
-        <div className="bg-base-200 rounded-lg p-4 flex items-center gap-3 shadow">
-          <User className="w-6 h-6 text-orange-400" />
-          <div>
-            <p className="text-sm text-gray-400">Student</p>
-            <h3 className="text-lg font-bold">6</h3>
-          </div>
-        </div>
-        <div className="bg-base-200 rounded-lg p-4 flex items-center gap-3 shadow">
-          <Shield className="w-6 h-6 text-orange-400" />
-          <div>
-            <p className="text-sm text-gray-400">Admin</p>
-            <h3 className="text-lg font-bold">3</h3>
-          </div>
-        </div>
-        <div className="bg-base-200 rounded-lg p-4 flex items-center gap-3 shadow">
-          <Building2 className="w-6 h-6 text-orange-400" />
-          <div>
-            <p className="text-sm text-gray-400">Department</p>
-            <h3 className="text-lg font-bold">4</h3>
-          </div>
-        </div>
+      {/* === Stats Cards === */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <StatsCard icon={<Users className="w-6 h-6 text-orange-400" />} label="Faculty" count={faculties?.length || 0} />
+        <StatsCard icon={<User className="w-6 h-6 text-orange-400" />} label="Students" count={students?.length || 0} />
+        <StatsCard icon={<Shield className="w-6 h-6 text-orange-400" />} label="Admins" count={1} />
+        <StatsCard icon={<Building2 className="w-6 h-6 text-orange-400" />} label="Departments" count={departments?.length || 0} />
       </div>
-       
-       <div>
-      {/* === Notice Board Component === */}
-      <NoticeBoard notices={notices} />
+
+      {/* === Notice Board === */}
+      <div>
+        <h3 className="text-xl font-semibold mb-3">Notices</h3>
+        <NoticeBoard notices={notices || []} />
+      </div>
     </div>
-      
+  );
+}
+
+function StatsCard({ icon, label, count }) {
+  return (
+    <div className="bg-base-200 rounded-lg p-4 flex items-center gap-3 shadow">
+      {icon}
+      <div>
+        <p className="text-sm text-gray-400">{label}</p>
+        <h3 className="text-lg font-bold">{count}</h3>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
+import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
+import { Loader } from 'lucide-react';
 // Student Pages
 import StudentDashboard from "./Pages/StudentDashboard.jsx";
 import { MyCourses } from "./Pages/MyCourses.jsx";
@@ -25,14 +26,29 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import StudentSidebar from "./components/StudentSidebar.jsx";
 import AdminSidebar from "./components/AdminSidebar.jsx";
 
+import useAuthStore from "./store/authStore.js";
 
 function App() {
+
+  const { checkAuth ,userrole,isCheckingAuth} = useAuthStore();
+ useEffect(() => {
+     checkAuth();
+   }, [checkAuth]);
+
+      if(isCheckingAuth && !userrole) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+         <Loader className="animate-spin h-10 w-10 text-blue-500" />
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Navigate to="/sign-in" />} />
-        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/sign-in" element={userrole === null ? <SignInPage /> : userrole === "Student" ? <Navigate to="/dashboard" /> : <Navigate to="/admin/dashboard" />} />
 
         {/* Student Routes */}
         <Route

@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
 function StudentSidebar() {
-  const { sideBarOpen, setSidebarOpen } = useAuthStore();
+  const { sideBarOpen, setSidebarOpen, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const navItemClasses = 'flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer';
@@ -64,7 +64,7 @@ function StudentSidebar() {
         onClick={() => navigate('/sign-in')}
       >
         <LogOut className="w-5 h-5 text-white" />
-        {sideBarOpen && <span className="text-base font-bold text-white ml-2">Logout</span>}
+        {sideBarOpen && <span className="text-base font-bold text-white ml-2" onClick={() => logout()}>Logout</span>}
       </div>
     </div>
   );

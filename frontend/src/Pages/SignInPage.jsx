@@ -1,18 +1,21 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import useAuthStore from "../store/authStore"; // Adjust the path as needed
 
 const SignInPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const { getCurrentUser, userrole } = useAuthStore();
+  const navigate = useNavigate(); // ✅
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    alert("Sign in submitted!");
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission
+    getCurrentUser(form.email, form.password);
   };
 
   return (
@@ -21,8 +24,13 @@ const SignInPage = () => {
         NextGen-ERP
       </h1>
 
-      <form onSubmit={handleSubmit} className="bg-base-100 border border-base-300 rounded-lg shadow-md p-8 w-full max-w-md space-y-4">
-        <h2 className="text-2xl font-bold text-white text-center mb-6">Welcome Back</h2>
+      <form
+        onSubmit={handleSubmit}
+        className="bg-base-100 border border-base-300 rounded-lg shadow-md p-8 w-full max-w-md space-y-4"
+      >
+        <h2 className="text-2xl font-bold text-white text-center mb-6">
+          Welcome Back
+        </h2>
 
         <input
           name="email"
@@ -49,10 +57,13 @@ const SignInPage = () => {
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-        </div>
+          </div>
         </div>
 
-        <button type="submit" className="btn w-full bg-primary/10 text-primary hover:bg-primary/20 transition">
+        <button
+          type="submit"
+          className="btn w-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+        >
           Sign In
         </button>
       </form>
@@ -60,4 +71,4 @@ const SignInPage = () => {
   );
 };
 
-export default SignInPage;
+export default SignInPage;
