@@ -1,10 +1,12 @@
 import React from 'react';
 import { CalendarDays } from 'lucide-react';
+import useAuthStore from '../store/authStore';
 
 function StudentDashboard() {
-    const [sideBarOpen, setSideBarOpen] = React.useState(false);
+     const { sideBarOpen } = useAuthStore();
   return (
-    <div className={`p-6 bg-gray-800 min-h-screen text-white ${sideBarOpen ? 'ml-56' : 'ml-20'}`}>
+  
+    <div className={`p-6 bg-gray-800 min-h-screen text-white transition-all duration-300  ${sideBarOpen ? 'ml-56' : 'ml-20'}`}>
       {/* Title */}
       <h1 className="text-2xl font-bold text-center mb-6">STUDENT DASHBOARD</h1>
 

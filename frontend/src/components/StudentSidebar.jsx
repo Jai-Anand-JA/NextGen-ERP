@@ -1,61 +1,70 @@
 import React from 'react';
 import { User, Book, Clipboard, Airplay, Landmark, LogOut, Sheet } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 
 function StudentSidebar() {
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const { sideBarOpen, setSidebarOpen } = useAuthStore();
+  const navigate = useNavigate();
+
+  const navItemClasses = 'flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer';
 
   return (
     <div
       className={`transition-all duration-300 
-        ${sidebarOpen ? 'w-56' : 'w-20'} 
+        ${sideBarOpen ? 'w-56' : 'w-20'} 
         h-screen border-r border-base-300 p-4 flex flex-col
         bg-gray-900 text-neutral-content fixed top-0 left-0 z-40 
         overflow-hidden`}
-      onMouseEnter={() => setSidebarOpen(true)}
-      onMouseLeave={() => setSidebarOpen(false)}
+      onMouseEnter={() => setSidebarOpen()}
+      onMouseLeave={() => setSidebarOpen()}
     >
-      {/* === Top Menu Items === */}
+      {/* === Top === */}
       <div className="menu space-y-2 w-full">
         <div className="flex items-center gap-2 mb-4 mt-1">
-          <Airplay className={`w-6 h-6 text-primary ${sidebarOpen ? '' : 'ml-2'}`} />
-          {sidebarOpen && <span className="text-white text-lg font-bold">NextGen-ERP</span>}
+          <Airplay className={`w-6 h-6 text-primary ${sideBarOpen ? '' : 'ml-2'}`} />
+          {sideBarOpen && <span className="text-white text-lg font-bold">NextGen-ERP</span>}
         </div>
 
-        {sidebarOpen && <hr className="border-white/40 mb-2" />}
+        {sideBarOpen && <hr className="border-white/40 mb-2" />}
 
-        <div className="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer">
+        {/* === Menu Items === */}
+        <NavLink to="/profile" className={navItemClasses}>
           <User className="w-5 h-5 text-primary mr-2" />
-          {sidebarOpen && <span className="text-base font-bold">Profile</span>}
-        </div>
+          {sideBarOpen && <span className="text-base font-bold">Profile</span>}
+        </NavLink>
 
-        <div className="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer">
+        <NavLink to="/my-courses" className={navItemClasses}>
           <Book className="w-5 h-5 text-primary mr-2" />
-          {sidebarOpen && <span className="text-base font-bold">Courses</span>}
-        </div>
+          {sideBarOpen && <span className="text-base font-bold">Courses</span>}
+        </NavLink>
 
-        <div className="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer">
+        <NavLink to="/dashboard" className={navItemClasses}>
           <Clipboard className="w-5 h-5 text-primary mr-2" />
-          {sidebarOpen && <span className="text-base font-bold">Grades</span>}
-        </div>
+          {sideBarOpen && <span className="text-base font-bold">Grades</span>}
+        </NavLink>
 
-        <div className="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer">
+        <NavLink to="/fees" className={navItemClasses}>
           <Landmark className="w-5 h-5 text-primary mr-2" />
-          {sidebarOpen && <span className="text-base font-bold">Fees</span>}
-        </div>
+          {sideBarOpen && <span className="text-base font-bold">Fees</span>}
+        </NavLink>
 
-        <div className="flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer">
+        <NavLink to="/my-attendance" className={navItemClasses}>
           <Sheet className="w-5 h-5 text-primary mr-2" />
-          {sidebarOpen && <span className="text-base font-bold">Attendance</span>}
-        </div>
+          {sideBarOpen && <span className="text-base font-bold">Attendance</span>}
+        </NavLink>
       </div>
 
-      {/* === Spacer to Push Logout Down === */}
+      {/* === Spacer === */}
       <div className="flex-grow" />
 
-      {/* === Logout Button === */}
-      <div className="flex items-center p-2 rounded-md hover:bg-red-600 cursor-pointer bg-primary transition-colors duration-200">
+      {/* === Logout === */}
+      <div
+        className="flex items-center p-2 rounded-md hover:bg-red-600 cursor-pointer bg-primary transition-colors duration-200"
+        onClick={() => navigate('/sign-in')}
+      >
         <LogOut className="w-5 h-5 text-white" />
-        {sidebarOpen && <span className="text-base font-bold text-white ml-2">Logout</span>}
+        {sideBarOpen && <span className="text-base font-bold text-white ml-2">Logout</span>}
       </div>
     </div>
   );
