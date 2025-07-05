@@ -1,26 +1,36 @@
-import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import StudentDashboard from './Pages/StudentDashboard.jsx';
-import { MyCourses } from './Pages/MyCourses.jsx';
-import { MyAttendance } from './Pages/MyAttendance.jsx';
-import SignInPage from './Pages/SignInPage.jsx';
-import ProfilePage from './Pages/StudentProfiePage.jsx';
-import Details from './components/Details.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
-import StudentSidebar from './components/StudentSidebar.jsx';
-import MyAttendanceHistory from './Pages/MyAttendanceHistory.jsx';
+import React from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+// Student Pages
+import StudentDashboard from "./Pages/StudentDashboard.jsx";
+import { MyCourses } from "./Pages/MyCourses.jsx";
+import { MyAttendance } from "./Pages/MyAttendance.jsx";
+import ProfilePage from "./Pages/StudentProfiePage.jsx";
+import MyAttendanceHistory from "./Pages/MyAttendanceHistory.jsx";
+
+// Admin Pages
+import AdminDashboard from "./Pages/AdminDashboard.jsx";
+import ManageStudents from "./Pages/ManageStudents.jsx";
+import ManageSubjects from "./Pages/ManageSubjects.jsx";
+
+
+// Shared Pages
+import SignInPage from "./Pages/SignInPage.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+
+// Sidebars
+import StudentSidebar from "./components/StudentSidebar.jsx";
+import AdminSidebar from "./components/AdminSidebar.jsx";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/sign-in" />} />
-
         {/* Public Route */}
+        <Route path="/" element={<Navigate to="/sign-in" />} />
         <Route path="/sign-in" element={<SignInPage />} />
 
         {/* Student Routes */}
-
         <Route
           path="/dashboard"
           element={
@@ -48,7 +58,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route 
+        <Route
           path="/attendance-history"
           element={
             <ProtectedRoute role="Student">
@@ -57,7 +67,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/profile"
           element={
@@ -67,9 +76,85 @@ function App() {
             </ProtectedRoute>
           }
         />
-      
+        {/* Admin Routes */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/faculty"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <h1 className="ml-20 p-4 text-white">Manage Faculty</h1>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <ManageStudents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/departments"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <h1 className="ml-20 p-4 text-white">Manage Departments</h1>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/courses"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <ManageSubjects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/fees"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <h1 className="ml-20 p-4 text-white">Fees Management</h1>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/timetable"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <h1 className="ml-20 p-4 text-white">Timetable Page</h1>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/notices"
+          element={
+            <ProtectedRoute role="Admin">
+              <AdminSidebar />
+              <h1 className="ml-20 p-4 text-white">Notice Board</h1>
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/unauthorized" element={<h1>403 - Unauthorized Access</h1>} />
+        {/* Unauthorized Route */}
+        <Route
+          path="/unauthorized"
+          element={<h1>403 - Unauthorized Access</h1>}
+        />
       </Routes>
     </BrowserRouter>
   );

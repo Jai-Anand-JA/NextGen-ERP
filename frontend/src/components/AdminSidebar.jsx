@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Book, Clipboard, Airplay, Landmark, LogOut, Sheet } from 'lucide-react';
+import { User, Users, Building2, Book, Landmark, Calendar, ScrollText, LogOut, Airplay } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
@@ -19,7 +19,7 @@ function AdminSidebar() {
       onMouseEnter={() => setSidebarOpen()}
       onMouseLeave={() => setSidebarOpen()}
     >
-      {/* === Top === */}
+      {/* === Brand === */}
       <div className="menu space-y-2 w-full">
         <div className="flex items-center gap-2 mb-4 mt-1">
           <Airplay className={`w-6 h-6 text-primary ${sideBarOpen ? '' : 'ml-2'}`} />
@@ -28,34 +28,43 @@ function AdminSidebar() {
 
         {sideBarOpen && <hr className="border-white/40 mb-2" />}
 
-        {/* === Menu Items === */}
-        <NavLink to="/profile" className={navItemClasses}>
-          <User className="w-5 h-5 text-primary mr-2" />
-          {sideBarOpen && <span className="text-base font-bold">Profile</span>}
+        {/* === Navigation Links === */}
+        <NavLink to="/admin/faculty" className={navItemClasses}>
+          <Users className="w-5 h-5 text-primary mr-2" />
+          {sideBarOpen && <span className="text-base font-bold">Faculty</span>}
         </NavLink>
 
-        <NavLink to="/my-courses" className={navItemClasses}>
+        <NavLink to="/admin/students" className={navItemClasses}>
+          <Users className="w-5 h-5 text-primary mr-2" />
+          {sideBarOpen && <span className="text-base font-bold">Students</span>}
+        </NavLink>
+
+        <NavLink to="/admin/departments" className={navItemClasses}>
+          <Building2 className="w-5 h-5 text-primary mr-2" />
+          {sideBarOpen && <span className="text-base font-bold">Departments</span>}
+        </NavLink>
+
+        <NavLink to="/admin/courses" className={navItemClasses}>
           <Book className="w-5 h-5 text-primary mr-2" />
           {sideBarOpen && <span className="text-base font-bold">Courses</span>}
         </NavLink>
 
-        <NavLink to="/dashboard" className={navItemClasses}>
-          <Clipboard className="w-5 h-5 text-primary mr-2" />
-          {sideBarOpen && <span className="text-base font-bold">Grades</span>}
-        </NavLink>
-
-        <NavLink to="/fees" className={navItemClasses}>
+        <NavLink to="/admin/fees" className={navItemClasses}>
           <Landmark className="w-5 h-5 text-primary mr-2" />
           {sideBarOpen && <span className="text-base font-bold">Fees</span>}
         </NavLink>
 
-        <NavLink to="/my-attendance" className={navItemClasses}>
-          <Sheet className="w-5 h-5 text-primary mr-2" />
-          {sideBarOpen && <span className="text-base font-bold">Attendance</span>}
+        <NavLink to="/admin/timetable" className={navItemClasses}>
+          <Calendar className="w-5 h-5 text-primary mr-2" />
+          {sideBarOpen && <span className="text-base font-bold">Timetable</span>}
+        </NavLink>
+
+        <NavLink to="/admin/notices" className={navItemClasses}>
+          <ScrollText className="w-5 h-5 text-primary mr-2" />
+          {sideBarOpen && <span className="text-base font-bold">Notices</span>}
         </NavLink>
       </div>
 
-      {/* === Spacer === */}
       <div className="flex-grow" />
 
       {/* === Logout === */}

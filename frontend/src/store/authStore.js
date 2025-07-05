@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const useAuthStore = create((set, get) => ({
   isAuthenticated: true,
-  userrole: 'Student',
+  userrole: 'Admin',
   userId: null,
   isLoading: true,
   isSigningIn: false,
