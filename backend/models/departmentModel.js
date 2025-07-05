@@ -12,9 +12,9 @@ const departmentSchema = new mongoose.Schema({
         unique: true
     },
     headOfDepartment: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Faculty',
-        required: true
+       type: String,
+       required: true
+       
     },
     createdAt: {
         type: Date,

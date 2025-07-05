@@ -1,7 +1,7 @@
 import Admin from "../models/adminModel.js";
 import Faculty from "../models/facultyModel.js";
 import Student from "../models/studentModel.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 

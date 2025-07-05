@@ -1,4 +1,4 @@
-import {createDepartment, createFaculty, createStudent, createSubjects, createTimetable, deleteDepartment, deleteFaculty, deleteNotification, deleteStudent, deleteSubject, deleteTimetableEntry, getAllDepartments, getAllFaculty, getAllStudents, getAllSubjects, getNotifications, sendNotification, updateSubjectsOfFaculty } from "../controllers/adminController.js";
+import {createDepartment,updateStudentSubjects,getTimeTable ,createFaculty, createStudent, createSubjects, createTimetable, deleteDepartment, deleteFaculty, deleteNotification, deleteStudent, deleteSubject, deleteTimetableEntry, getAllDepartments, getAllFaculty, getAllStudents, getAllSubjects, getNotifications, sendNotification, updateSubjectsOfFaculty } from "../controllers/adminController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/isAdmin.js";
 import express from "express";
@@ -13,6 +13,8 @@ router.post('/create-subject', authMiddleware, isAdmin, createSubjects);
 router.post('/create-timetable',authMiddleware,isAdmin,createTimetable);
 router.post('/send-notification', authMiddleware, isAdmin, sendNotification);
 
+
+router.put('/update-subjects/:id',authMiddleware,isAdmin, updateStudentSubjects);
 router.put('/assign-subjects/:id', authMiddleware, isAdmin, updateSubjectsOfFaculty);
 
 router.get('/get-students', authMiddleware, isAdmin, getAllStudents);
@@ -20,7 +22,7 @@ router.get('/get-faculty', authMiddleware, isAdmin, getAllFaculty);
 router.get('/get-subjects', authMiddleware, isAdmin, getAllSubjects);
 router.get('/get-departments', authMiddleware, isAdmin, getAllDepartments);
 router.get('/get-notifications',getNotifications);
-
+router.get('/timetable',getTimeTable);
 router.delete('/delete-student/:id', authMiddleware, isAdmin, deleteStudent);
 router.delete('/delete-faculty/:id', authMiddleware, isAdmin, deleteFaculty);
 router.delete('/delete-subject/:id', authMiddleware, isAdmin, deleteSubject);

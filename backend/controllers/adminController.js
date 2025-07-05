@@ -5,7 +5,7 @@ import Subject from '../models/subjectModel.js';
 import Department from '../models/departmentModel.js';
 import Notice from '../models/noticeModel.js';
 import TimeTable from '../models/timeTableModel.js';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 export const createStudent = async (req, res) => {
      const data = req.body;
@@ -35,6 +35,7 @@ export const createStudent = async (req, res) => {
                     department: data.department,
                     batch: data.batch,
                     semester: data.semester,
+                    subjects: data.subjects || [] // optional subjects array
                 }
             );
             await student.save();
@@ -47,58 +48,91 @@ export const createStudent = async (req, res) => {
     };
 
 
-
 export const createFaculty = async (req, res) => {
-    const data = req.body;
+  const data = req.body;
 
-    try {
-        const existingFaculty = await Faculty.findOne({ email: data.email });
-        if (existingFaculty) {
-            return res.status(400).json({ message: 'Faculty with this email already exists' });
-        }
-        const hashedPassword = await bcrypt.hash(data.password, 10);
-        data.password = hashedPassword;
-        const faculty = new Faculty({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            phone: data.phone,
-            department: data.department,
-            role: 'Faculty',
-        });
-        await faculty.save();
-
-        res.status(201).json({ message: 'Faculty created successfully' });
-    } catch (error) {
-        console.error('Error creating faculty:', error);
-        res.status(500).json({ message: 'Internal server error' });
+  try {
+    const existingFaculty = await Faculty.findOne({ email: data.email });
+    if (existingFaculty) {
+      return res.status(400).json({ message: 'Faculty with this email already exists' });
     }
-}
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    data.password = hashedPassword;
+
+    // Create new faculty
+    const newFaculty = new Faculty({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+      department: data.department,
+      role: 'Faculty',
+      subjects: data.subjects || [], // optional subjects array
+    });
+
+    const savedFaculty = await newFaculty.save();
+
+    // If subjects are provided, update them to include this faculty
+    if (data.subjects && Array.isArray(data.subjects)) {
+      await Promise.all(
+        data.subjects.map(async (subjectId) => {
+          await Subject.findByIdAndUpdate(subjectId, {
+            $addToSet: { faculty: savedFaculty._id }, // avoid duplicate entries
+          });
+        })
+      );
+    }
+
+    res.status(201).json({ message: 'Faculty created successfully' });
+  } catch (error) {
+    console.error('Error creating faculty:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 
 
 export const createSubjects = async (req, res) => {
-    const data = req.body;
+  const data = req.body;
 
-    try {
-        const existingSubject = await Subject.findOne({ code: data.code });
-        if (existingSubject) {
-            return res.status(400).json({ message: 'Subject with this code already exists' });
-        }
-        const subject = new Subject({
-            name: data.name,
-            code: data.code,
-            credits: data.credits,
-            department: data.department,
-            year: data.year,
-            semester: data.semester,
-        });
-        await subject.save();
-        res.status(201).json({ message: 'Subject created successfully' });
-    } catch (error) {
-        console.error('Error creating subject:', error);
-        res.status(500).json({ message: 'Internal server error' });
+  try {
+    const existingSubject = await Subject.findOne({ code: data.code });
+    if (existingSubject) {
+      return res.status(400).json({ message: 'Subject with this code already exists' });
     }
-}
+
+    const subject = new Subject({
+      name: data.name,
+      code: data.code,
+      credits: data.credits,
+      department: data.department,
+      year: data.year,
+      semester: data.semester,
+      faculty: data.faculty || [],
+    });
+
+    const savedSubject = await subject.save();
+
+    // Optional: update each faculty's `subjects[]` array to include this subject
+    if (data.faculty && Array.isArray(data.faculty)) {
+      await Promise.all(
+        data.faculty.map(async (facultyId) => {
+          await Faculty.findByIdAndUpdate(facultyId, {
+            $addToSet: { subjects: savedSubject._id },
+          });
+        })
+      );
+    }
+
+    res.status(201).json({ message: 'Subject created successfully' });
+  } catch (error) {
+    console.error('Error creating subject:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
 export const updateSubjectsOfFaculty = async (req, res) => {
     const { subjectIds } = req.body;
     const { id: facultyId } = req.params;
@@ -144,7 +178,7 @@ export const updateSubjectsOfFaculty = async (req, res) => {
 
 export const getAllStudents = async (req, res) => {
     try {
-        const students = await Student.find().select('-password');
+        const students = await Student.find().populate('subjects').select('-password');
         res.status(200).json(students);
     } catch (error) {
         console.error('Error fetching students:', error);
@@ -164,7 +198,7 @@ export const getAllFaculty = async (req, res) => {
 
 export const getAllSubjects = async (req, res) => {
     try {
-        const subjects = await Subject.find();
+        const subjects = await Subject.find().populate('faculty', '-password');
         res.status(200).json(subjects);
     } catch (error) {
         console.error('Error fetching subjects:', error);
@@ -173,14 +207,14 @@ export const getAllSubjects = async (req, res) => {
 };
 
 export const getAllDepartments = async (req, res) => {
-    try {
-        const departments = await Department.find();
-        res.status(200).json(departments);
-    } catch (error) {
-        console.error('Error fetching departments:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-}
+  try {
+    const departments = await Department.find();
+    res.status(200).json(departments);
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 export const createDepartment = async (req, res) => {
     const data = req.body;
@@ -205,7 +239,7 @@ export const sendNotification = async (req, res) => {
 
     try {
         // Validate noticeFor
-        if (!['Student', 'Faculty', 'Admin'].includes(noticeFor)) {
+        if (!['Student', 'Faculty', 'All'].includes(noticeFor)) {
             return res.status(400).json({ message: 'Invalid recipient role' });
         }
 
@@ -376,6 +410,45 @@ export const deleteTimetableEntry = async (req, res) => {
         res.status(200).json({ message: 'Timetable entry deleted successfully' });
     } catch (error) {
         console.error('Error deleting timetable entry:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+export const getTimeTable = async (req, res) => {
+    try {
+        const timetable = await TimeTable.find().populate('subjectId', 'name code');
+        res.status(200).json(timetable);
+    } catch (error) {
+        console.error('Error fetching timetable:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
+export const updateStudentSubjects = async (req, res) => {
+    const { subjectIds } = req.body;
+    const { id: studentId } = req.params;
+
+    try {
+        const student = await Student.findById(studentId);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        const oldSubjectIds = student.subjects.map(id => id.toString());
+        const newSubjectIds = subjectIds.map(id => id.toString());
+
+        const addedSubjects = newSubjectIds.filter(id => !oldSubjectIds.includes(id));
+        const removedSubjects = oldSubjectIds.filter(id => !newSubjectIds.includes(id));
+
+        await Student.findByIdAndUpdate(studentId, { subjects: subjectIds }, { new: true });
+
+        res.status(200).json({
+            message: 'Student subjects updated successfully',
+            addedSubjects,
+            removedSubjects
+        });
+    } catch (error) {
+        console.error('Error updating student subjects:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 }
