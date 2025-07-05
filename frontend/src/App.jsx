@@ -12,7 +12,10 @@ import MyAttendanceHistory from "./Pages/MyAttendanceHistory.jsx";
 import AdminDashboard from "./Pages/AdminDashboard.jsx";
 import ManageStudents from "./Pages/ManageStudents.jsx";
 import ManageSubjects from "./Pages/ManageSubjects.jsx";
-
+import ManageFaculty from "./Pages/ManageFaculty.jsx";
+import ManageDepartment from "./Pages/Managedepartment.jsx";
+import ManageTimeTable from "./Pages/ManageTimeTable.jsx";
+import ManageNotices from "./Pages/ManageNotices.jsx";
 
 // Shared Pages
 import SignInPage from "./Pages/SignInPage.jsx";
@@ -21,6 +24,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 // Sidebars
 import StudentSidebar from "./components/StudentSidebar.jsx";
 import AdminSidebar from "./components/AdminSidebar.jsx";
+
 
 function App() {
   return (
@@ -91,7 +95,7 @@ function App() {
           element={
             <ProtectedRoute role="Admin">
               <AdminSidebar />
-              <h1 className="ml-20 p-4 text-white">Manage Faculty</h1>
+              <ManageFaculty />
             </ProtectedRoute>
           }
         />
@@ -109,7 +113,7 @@ function App() {
           element={
             <ProtectedRoute role="Admin">
               <AdminSidebar />
-              <h1 className="ml-20 p-4 text-white">Manage Departments</h1>
+              <ManageDepartment/>
             </ProtectedRoute>
           }
         />
@@ -136,7 +140,7 @@ function App() {
           element={
             <ProtectedRoute role="Admin">
               <AdminSidebar />
-              <h1 className="ml-20 p-4 text-white">Timetable Page</h1>
+              <ManageTimeTable />
             </ProtectedRoute>
           }
         />
@@ -145,7 +149,7 @@ function App() {
           element={
             <ProtectedRoute role="Admin">
               <AdminSidebar />
-              <h1 className="ml-20 p-4 text-white">Notice Board</h1>
+              <ManageNotices />
             </ProtectedRoute>
           }
         />
