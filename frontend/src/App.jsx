@@ -18,6 +18,15 @@ import ManageDepartment from "./Pages/Managedepartment.jsx";
 import ManageTimeTable from "./Pages/ManageTimeTable.jsx";
 import ManageNotices from "./Pages/ManageNotices.jsx";
 
+// Faculty Pages
+import FacultyDashboard from "./Pages/FacultyDashboard.jsx";
+import FacultyProfile from "./Pages/FacultyProfile.jsx";  
+import FacultyCourses from "./Pages/FacultyCourses.jsx";
+import FacultyAttendance from "./Pages/FacultyAttendance.jsx";
+import FacultyGrades from "./Pages/FacultyGrades.jsx";
+import FacultyTimeTable from "./Pages/FacultyTimeTable.jsx";
+
+
 // Shared Pages
 import SignInPage from "./Pages/SignInPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -25,7 +34,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 // Sidebars
 import StudentSidebar from "./components/StudentSidebar.jsx";
 import AdminSidebar from "./components/AdminSidebar.jsx";
-
+import FacultySidebar from "./components/FacultySidebar.jsx";
 import useAuthStore from "./store/authStore.js";
 
 function App() {
@@ -48,7 +57,7 @@ function App() {
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Navigate to="/sign-in" />} />
-        <Route path="/sign-in" element={userrole === null ? <SignInPage /> : userrole === "Student" ? <Navigate to="/dashboard" /> : <Navigate to="/admin/dashboard" />} />
+        <Route path="/sign-in" element={userrole === null ? <SignInPage /> : userrole === "Student" ? <Navigate to="/dashboard" /> : userrole === "Faculty" ? <Navigate to="/faculty/dashboard" /> : <Navigate to="/admin/dashboard" />} />
 
         {/* Student Routes */}
         <Route
@@ -166,6 +175,61 @@ function App() {
             <ProtectedRoute role="Admin">
               <AdminSidebar />
               <ManageNotices />
+            </ProtectedRoute>
+          }
+        />
+        {/* Faculty Routes */}
+        <Route
+          path="/faculty/dashboard"
+          element={
+            <ProtectedRoute role="Faculty">
+              <FacultySidebar />
+              <FacultyDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/profile"
+          element={
+            <ProtectedRoute role="Faculty">
+              <FacultySidebar />
+              <FacultyProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/my-courses"
+          element={
+            <ProtectedRoute role="Faculty">
+              <FacultySidebar />
+              <FacultyCourses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/my-attendance"
+          element={
+            <ProtectedRoute role="Faculty">
+              <FacultySidebar />
+              <FacultyAttendance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/grades"
+          element={
+            <ProtectedRoute role="Faculty">
+              <FacultySidebar />
+              <FacultyGrades />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/faculty/timetable"
+          element={
+            <ProtectedRoute role="Faculty">
+              <FacultySidebar />
+              <FacultyTimeTable />
             </ProtectedRoute>
           }
         />
