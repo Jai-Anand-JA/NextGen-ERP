@@ -45,7 +45,7 @@ function App() {
      checkAuth();
    }, [checkAuth]);
 
-      if(isCheckingAuth && !userrole) {
+      if(isCheckingAuth && !userrole ) {
     return (
       <div className="flex items-center justify-center h-screen">
          <Loader className="animate-spin h-10 w-10 text-blue-500" />
@@ -59,7 +59,7 @@ function App() {
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Navigate to="/sign-in" />} />
-        <Route path="/sign-in" element={userrole === null ? <SignInPage /> : userrole === "Student" ? <Navigate to="/dashboard" /> : userrole === "Faculty" ? <Navigate to="/faculty/dashboard" /> : <Navigate to="/admin/dashboard" />} />
+        <Route path="/sign-in" element={userrole === null ? <SignInPage /> : userrole === "Student" ? <Navigate to="/dashboard" /> : userrole === "Faculty" ? <Navigate to="/faculty/my-courses" /> : <Navigate to="/admin/dashboard" />} />
 
         {/* Student Routes */}
         <Route
@@ -181,15 +181,6 @@ function App() {
           }
         />
         {/* Faculty Routes */}
-        <Route
-          path="/faculty/dashboard"
-          element={
-            <ProtectedRoute role="Faculty">
-              <FacultySidebar />
-              <FacultyDashboard />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/faculty/profile"
           element={

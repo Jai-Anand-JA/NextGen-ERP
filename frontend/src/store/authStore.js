@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { axiosInstance } from '../lib/axiosInstance';
-
+import { toast } from 'react-hot-toast';
 const useAuthStore = create((set, get) => ({
   isAuthenticated: false,
   userrole: null,
@@ -18,6 +18,7 @@ const useAuthStore = create((set, get) => ({
   attendance: null,
   departments: null,
   isLoading: true,
+  grades: null,
 
   setSidebarOpen: () => set({ sideBarOpen: !get().sideBarOpen }),
 
@@ -50,12 +51,22 @@ const useAuthStore = create((set, get) => ({
 
   logout: async () => {
     try {
-      const response = await axiosInstance.get('/api/auth/logout');
+      const response = await axiosInstance.post('/api/auth/logout');
       if (response.data.success) {
         set({
           isAuthenticated: false,
           userrole: null,
           userId: null,
+          userData: null,
+          notices: null,
+          subjects: null,
+          students: null,
+          faculties: null,
+          timetable: null,
+          attendance: null,
+          departments: null,
+          isCheckingAuth: true,
+          isLoading: true,
         });
         console.log('User logged out');
       }
@@ -155,27 +166,88 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  getTimeTable : async ()=>{
-    try{
-        let res;
-        const role = get().userrole;
-        if(role === 'Admin'){
-            res = await axiosInstance.get('/api/admin/timetable');
-        } else if(role === 'Faculty'){
-            res = await axiosInstance.get('/api/faculty/timetable');
-        } else if(role === 'Student'){
-            res = await axiosInstance.get('/api/student/timetable');
-        }
-        if(res?.status === 200){
-            set({timetable: res.data});
-        }
-
+  getTimeTable: async () => {
+    try {
+      let res;
+      const role = get().userrole;
+      if (role === 'Admin') {
+        res = await axiosInstance.get('/api/admin/timetable');
+      } else if (role === 'Faculty') {
+        res = await axiosInstance.get('/api/faculty/timetable');
+      } else if (role === 'Student') {
+        res = await axiosInstance.get('/api/student/timetable');
+      }
+      if (res?.status === 200) {
+        set({ timetable: res.data });
+      }
+    } catch (error) {
+      console.error('Failed to fetch timetable:', error.message);
+      set({ timetable: null });
     }
-    catch(error){
-        console.error('Failed to fetch timetable:', error.message);
-        set({timetable: null});
+  },
+getFacultySubjects: async () => {
+  set({ isLoading: true });
+  try {
+    const res = await axiosInstance.get('/api/faculty/subjects');
+    if (res.status === 200) {
+      set({ subjects: res.data });
     }
+  } catch (error) {
+    console.error('Failed to fetch faculty subjects:', error.message);
+    toast.error('Failed to load subjects');
+  } finally {
+    set({ isLoading: false });
   }
+},
+
+getStudentsBySubject: async (subjectId) => {
+  set({ isLoading: true });
+  try {
+    const res = await axiosInstance.get(`/api/faculty/students/${subjectId}`);
+    if (res.status === 200) {
+      set({ students: res.data });
+    }
+  } catch (error) {
+    console.error('Failed to fetch students by subject:', error.message);
+    toast.error('Failed to load students');
+    set({ students: [] });
+  } finally {
+    set({ isLoading: false });
+  }
+}
+,
+markAttendance: async ({ subjectId, date, attendanceData }) => {
+  try {
+    const res = await axiosInstance.post('/api/faculty/attendance/mark', {
+      subjectId,
+      date,
+      attendanceData,
+    });
+
+    if (res.status === 200) {
+      toast.success('Attendance submitted successfully.');
+    } else {
+      toast.error('Failed to mark attendance.');
+    }
+  } catch (error) {
+    console.error('Error submitting attendance:', error.message);
+    toast.error('Failed to submit attendance.');
+  }
+},
+
+getFacultyTimetable: async () => {
+  try {
+    const res = await axiosInstance.get('/api/faculty/timetable');
+    if (res.status === 200) {
+      set({ timetable: res.data });
+    }
+  } catch (error) {
+    console.error('Failed to fetch faculty timetable:', error.message);
+    toast.error('Failed to load timetable');
+    set({ timetable: [] });
+  }
+},
+
 }));
 
 export default useAuthStore;

@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
 function FacultySidebar() {
-  const { sideBarOpen, setSidebarOpen } = useAuthStore();
+  const { sideBarOpen, setSidebarOpen ,logout} = useAuthStore();
   const navigate = useNavigate();
 
   const navItemClasses = 'flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer';
@@ -61,10 +61,10 @@ function FacultySidebar() {
       {/* === Logout === */}
       <div
         className="flex items-center p-2 rounded-md hover:bg-red-600 cursor-pointer bg-primary transition-colors duration-200"
-        onClick={() => navigate('/sign-in')}
+       onClick={ ()=> logout() }
       >
         <LogOut className="w-5 h-5 text-white" />
-        {sideBarOpen && <span className="text-base font-bold text-white ml-2">Logout</span>}
+        {sideBarOpen && <span className="text-base font-bold text-white ml-2" >Logout</span>}
       </div>
     </div>
   );

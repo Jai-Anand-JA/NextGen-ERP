@@ -1,108 +1,151 @@
-import React, { useEffect, useState } from 'react';
-import useAuthStore from '../store/authStore';
+import React, { useEffect, useState } from "react";
+import useAuthStore from "../store/authStore";
+import { Loader, Users, BookOpen, PercentCircle } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 function FacultyCourses() {
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const {
+    sideBarOpen,
+    getFacultySubjects,
+    getStudentsBySubject,
+    subjects,
+    students,
+    isLoading,
+  } = useAuthStore();
 
-  const dummyCourses = [
-    {
-      courseId: 'CSF307',
-      courseName: 'Technical Training 2',
-      studentsEnrolled: 43,
-    },
-    {
-      courseId: 'CSF101',
-      courseName: 'Data Structures',
-      studentsEnrolled: 38,
-    },
-    {
-      courseId: 'CSF205',
-      courseName: 'Operating Systems',
-      studentsEnrolled: 29,
-    },
-  ];
-
-  const studentData = {
-    CSF307: [
-      { studentId: 'stu001', name: 'Alice', attendancePercentage: '91%' },
-      { studentId: 'stu002', name: 'Bob', attendancePercentage: '86%' },
-    ],
-    CSF101: [
-      { studentId: 'stu003', name: 'Charlie', attendancePercentage: '95%' },
-      { studentId: 'stu004', name: 'Diana', attendancePercentage: '91%' },
-    ],
-    CSF205: [
-      { studentId: 'stu005', name: 'Eva', attendancePercentage: '82%' },
-      { studentId: 'stu006', name: 'Frank', attendancePercentage: '77%' },
-    ],
-  };
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   useEffect(() => {
-    setCourses(dummyCourses);
+    getFacultySubjects();
   }, []);
 
-  const { sideBarOpen } = useAuthStore();
+  useEffect(() => {
+    if (selectedCourseId) {
+      getStudentsBySubject(selectedCourseId);
+    }
+  }, [selectedCourseId]);
 
-  const selectedCourseData = selectedCourse
-    ? courses.find((c) => c.courseId === selectedCourse)
-    : null;
+  const selectedCourse = subjects?.find((s) => s._id === selectedCourseId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="animate-spin h-10 w-10 text-blue-500" />
+      </div>
+    );
+  }
 
   return (
-    <div className={`mx-auto p-6 ${sideBarOpen ? 'ml-56' : 'ml-20'} transition-all duration-300`}>
+    <div
+      className={`mx-auto p-6 ${
+        sideBarOpen ? "ml-56" : "ml-20"
+      } transition-all duration-300`}
+    >
       <h1 className="text-2xl font-semibold mb-6 text-base-content">
-        {selectedCourseData ? `Students in ${selectedCourseData.courseName}` : 'Assigned Courses'}
+        {selectedCourse
+          ? `Students in ${selectedCourse.name}`
+          : "Assigned Courses"}
       </h1>
 
-      {/* Back Button */}
-      {selectedCourse && (
+      {selectedCourseId && (
         <button
-          onClick={() => setSelectedCourse(null)}
-          className="mb-4 text-sm text-blue-500 underline"
+          onClick={() => setSelectedCourseId(null)}
+          className="mb-6 inline-flex items-center gap-2 text-sm text-blue-600 font-medium px-3 py-1.5 rounded-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition"
         >
-          ← Back to Courses
+          <span className="text-xl">←</span>
+          Back to Courses
         </button>
       )}
 
-      {/* Show Students in Selected Course */}
-      {selectedCourse ? (
-        <div className="overflow-x-auto max-w-3xl">
-          <table className="table w-full bg-base-200 border border-base-300 rounded-xl">
-            <thead>
-              <tr className="text-base-content text-sm">
-                <th className="py-2 px-4 text-left">Roll No.</th>
-                <th className="py-2 px-4 text-left">Name</th>
-                <th className="py-2 px-4 text-left">Attendance %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {studentData[selectedCourse]?.map((student) => (
-                <tr key={student.studentId} className="border-t border-base-300">
-                  <td className="py-2 px-4 text-base-content">{student.studentId}</td>
-                  <td className="py-2 px-4 text-base-content">{student.name}</td>
-                  <td className="py-2 px-4 text-base-content font-medium">{student.attendancePercentage}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Student Cards */}
+      {selectedCourseId ? (
+        students?.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {students.map((student) => {
+              const attendance = student.attendancePercentage ?? 0;
+              const isHigh = attendance >= 75;
+              const isSome = attendance > 0;
+
+              return (
+                <div
+                  key={student._id}
+                  className="bg-gray-700 text-white rounded-lg shadow-md p-4 flex flex-col gap-3"
+                >
+                  <div className="flex justify-between items-start gap-3">
+                    <div>
+                      <h2 className="text-lg font-semibold">{student.name}</h2>
+                      <p className="text-sm text-gray-300">
+                        Roll No: {student.rollNumber}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Dept: {student.department}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Class: {student.class}, Section: {student.section}
+                      </p>
+                    </div>
+
+                    <div
+                      className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        isHigh
+                          ? "bg-green-600"
+                          : isSome
+                          ? "bg-yellow-600"
+                          : "bg-red-600"
+                      }`}
+                    >
+                      <PercentCircle className="w-4 h-4 mr-1" />
+                      {attendance}%
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center text-base-content/60 mt-6">
+            No students found for this course.
+          </div>
+        )
       ) : (
-        // Show Course Cards
+        // Course Cards
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
-            <div
-              key={course.courseId}
-              className="bg-base-200 border border-base-300 rounded-2xl p-5 shadow-md max-w-sm mx-auto w-full cursor-pointer hover:bg-base-300 transition"
-              onClick={() => setSelectedCourse(course.courseId)}
-            >
-              <h2 className="text-lg font-medium text-base-content">{course.courseName}</h2>
-              <p className="text-sm text-base-content/70">{course.courseId}</p>
-              <div className="mt-4">
-                <span className="text-sm text-base-content/60">Students Enrolled: </span>
-                <span className="font-bold text-base-content">{course.studentsEnrolled}</span>
+          {subjects?.length ? (
+            subjects.map((subject) => (
+              <div
+                key={subject._id}
+                className="bg-base-200 border border-base-300 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="w-5 h-5 text-base-content/80" />
+                  <h2 className="text-lg font-medium text-base-content">
+                    {subject.name}
+                  </h2>
+                </div>
+
+                <p className="text-sm text-base-content/70 mb-1">
+                  Code: {subject.code}
+                </p>
+                <p className="text-sm text-base-content/70 mb-1">
+                  Department: {subject.department || "N/A"}
+                </p>
+                <p className="text-sm text-base-content/70 mb-4">
+                  Semester: {subject.semester || "N/A"}
+                </p>
+
+                <button
+                  onClick={() => setSelectedCourseId(subject._id)}
+                  className="mt-2 text-sm px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                >
+                  View Enrolled Students
+                </button>
               </div>
+            ))
+          ) : (
+            <div className="text-base-content/70 col-span-full text-center">
+              No subjects assigned
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

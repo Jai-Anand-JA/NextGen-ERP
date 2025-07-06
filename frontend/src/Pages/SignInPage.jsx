@@ -1,23 +1,33 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ✅
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import useAuthStore from "../store/authStore"; // Adjust the path as needed
+import { Loader } from "lucide-react"; // ✅ Loader icon
+import useAuthStore from "../store/authStore";
+import toast from "react-hot-toast";
 
 const SignInPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { getCurrentUser, userrole } = useAuthStore();
-  const navigate = useNavigate(); // ✅
+
+  const { getCurrentUser, userrole, isSigningIn } = useAuthStore(); // ✅ Grab isSigningIn from the store
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
-    getCurrentUser(form.email, form.password);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    try{
+      await getCurrentUser(form.email, form.password);
+    }catch (error) {
+      toast.error("Something went wrong. Try again.");
+    }
   };
-
   return (
     <div className="min-h-screen bg-base-100 flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-center mb-8">
@@ -62,9 +72,21 @@ const SignInPage = () => {
 
         <button
           type="submit"
-          className="btn w-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+          disabled={isSigningIn}
+          className={`btn w-full transition ${
+            isSigningIn
+              ? "bg-primary/30 text-gray-300 cursor-not-allowed"
+              : "bg-primary/10 text-primary hover:bg-primary/20"
+          }`}
         >
-          Sign In
+          {isSigningIn ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader className="h-4 w-4 animate-spin" />
+              Signing In...
+            </span>
+          ) : (
+            "Sign In"
+          )}
         </button>
       </form>
     </div>
