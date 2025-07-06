@@ -9,7 +9,7 @@ const ManageStudents = () => {
   const { departments, subjects, students, getAllData } = useAuthStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editSubjectModal, setEditSubjectModal] = useState({ open: false, studentId: null });
-  const [studentCount, setStudentCount] = useState(1);
+
   const [student, setStudent] = useState({
     name: '',
     age: '',
@@ -20,7 +20,7 @@ const ManageStudents = () => {
     department: '',
     startYear: '',
     endYear: '',
-    rollNumber: '',
+    password: '',
   });
 
   const [editSubjects, setEditSubjects] = useState([]);
@@ -28,20 +28,6 @@ const ManageStudents = () => {
   useEffect(() => {
     getAllData();
   }, []);
-
-  useEffect(() => {
-    if (students?.length) setStudentCount(students.length + 1);
-  }, [students]);
-
-  useEffect(() => {
-    if (student.subjects.length > 0 && student.department) {
-      const serial = String(22010000 + studentCount);
-      setStudent(prev => ({
-        ...prev,
-        rollNumber: `${serial}`,
-      }));
-    }
-  }, [student.subjects, student.department, studentCount]);
 
   const handleChange = (e) => {
     setStudent({ ...student, [e.target.name]: e.target.value });
@@ -57,17 +43,32 @@ const ManageStudents = () => {
     }));
   };
 
+  const generateRollNumber = () => {
+    const deptCode = student.department.slice(0, 3).toUpperCase();
+    const year = student.startYear || new Date().getFullYear();
+    const suffix = Date.now().toString().slice(-4);
+    return `${deptCode}-${year}-${suffix}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!student.subjects.length || !student.department || !student.startYear || !student.endYear || !student.password) {
+      toast.error('Please fill all fields and select at least one subject');
+      return;
+    }
+
     const selectedSubjectIds = subjects
       .filter(subject => student.subjects.includes(subject.name))
       .map(subject => subject._id);
 
+    const rollNumber = generateRollNumber();
+
     const payload = {
       name: student.name,
       email: student.email,
-      password: 'student123',
-      rollNumber: student.rollNumber,
+      password: student.password,
+      rollNumber,
       class: student.subjects[0],
       section: student.department,
       gender: student.gender,
@@ -84,8 +85,7 @@ const ManageStudents = () => {
     try {
       const res = await axiosInstance.post('/api/admin/create-student', payload);
       if (res.status === 200 || res.status === 201) {
-        toast.success('Student enrolled successfully 🎉');
-        setStudentCount(prev => prev + 1);
+        toast.success(`Student enrolled 🎉 Roll No: ${rollNumber}`);
         setStudent({
           name: '',
           age: '',
@@ -96,7 +96,7 @@ const ManageStudents = () => {
           department: '',
           startYear: '',
           endYear: '',
-          rollNumber: '',
+          password: '',
         });
         setIsModalOpen(false);
         getAllData();
@@ -151,7 +151,6 @@ const ManageStudents = () => {
         </button>
       </div>
 
-      {/* Students List */}
       {students?.length > 0 ? (
         <div className="bg-base-100 rounded-xl shadow border border-base-300">
           <div className="text-xl font-semibold px-6 py-4">Enrolled Students</div>
@@ -194,24 +193,40 @@ const ManageStudents = () => {
           <div className="bg-base-100 p-6 rounded-xl w-full max-w-3xl shadow-lg border border-base-300">
             <h2 className="text-xl font-semibold mb-4">Enroll New Student</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[['Name', 'name'], ['Age', 'age', 'number'], ['Phone', 'phone'], ['Email', 'email', 'email'], ['Start Year', 'startYear', 'number'], ['End Year', 'endYear', 'number']].map(([label, name, type = 'text']) => (
+              {[
+                ['Name', 'name'],
+                ['Age', 'age', 'number'],
+                ['Phone', 'phone'],
+                ['Email', 'email', 'email'],
+                ['Start Year', 'startYear', 'number'],
+                ['End Year', 'endYear', 'number'],
+                ['Password', 'password']
+              ].map(([label, name, type = 'text']) => (
                 <div key={name}>
                   <label className="block mb-1">{label}</label>
-                  <input name={name} value={student[name]} onChange={handleChange} type={type} className="input input-bordered w-full" required />
+                  <input
+                    name={name}
+                    value={student[name]}
+                    onChange={handleChange}
+                    type={type}
+                    className="input input-bordered w-full"
+                    required
+                  />
                 </div>
               ))}
 
               <div>
                 <label className="block mb-1">Gender</label>
-                <select name="gender" value={student.gender} onChange={handleChange} className="select select-bordered w-full" required>
+                <select
+                  name="gender"
+                  value={student.gender}
+                  onChange={handleChange}
+                  className="select select-bordered w-full"
+                  required
+                >
                   <option value="">Select</option>
                   {genders.map(g => <option key={g}>{g}</option>)}
                 </select>
-              </div>
-
-              <div>
-                <label className="block mb-1">Roll Number</label>
-                <input name="rollNumber" value={student.rollNumber} readOnly className="input input-bordered w-full bg-base-200" />
               </div>
 
               <div className="col-span-2">
@@ -219,7 +234,13 @@ const ManageStudents = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {subjects?.map(subject => (
                     <label key={subject._id} className="flex items-center gap-2">
-                      <input type="checkbox" value={subject.name} checked={student.subjects.includes(subject.name)} onChange={handleSubjectChange} className="checkbox checkbox-sm" />
+                      <input
+                        type="checkbox"
+                        value={subject.name}
+                        checked={student.subjects.includes(subject.name)}
+                        onChange={handleSubjectChange}
+                        className="checkbox checkbox-sm"
+                      />
                       <span>{subject.name}</span>
                     </label>
                   ))}
@@ -228,10 +249,18 @@ const ManageStudents = () => {
 
               <div>
                 <label className="block mb-1">Department</label>
-                <select name="department" value={student.department} onChange={handleChange} className="select select-bordered w-full" required>
+                <select
+                  name="department"
+                  value={student.department}
+                  onChange={handleChange}
+                  className="select select-bordered w-full"
+                  required
+                >
                   <option value="">Select</option>
                   {departments?.map(dept => (
-                    <option key={dept._id || dept.code} value={dept.name || dept.label}>{dept.name || dept.label}</option>
+                    <option key={dept._id || dept.code} value={dept.name || dept.label}>
+                      {dept.name || dept.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -253,7 +282,13 @@ const ManageStudents = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
               {subjects.map(subject => (
                 <label key={subject._id} className="flex items-center gap-2">
-                  <input type="checkbox" value={subject._id} checked={editSubjects.includes(subject._id)} onChange={handleEditSubjectChange} className="checkbox checkbox-sm" />
+                  <input
+                    type="checkbox"
+                    value={subject._id}
+                    checked={editSubjects.includes(subject._id)}
+                    onChange={handleEditSubjectChange}
+                    className="checkbox checkbox-sm"
+                  />
                   <span>{subject.name}</span>
                 </label>
               ))}

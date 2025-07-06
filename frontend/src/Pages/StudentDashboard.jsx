@@ -1,13 +1,39 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CalendarDays } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 
 function StudentDashboard() {
-     const { sideBarOpen } = useAuthStore();
+  const {
+    sideBarOpen,
+    userData,
+    attendance,
+    timetable,
+    getStudentAttendanceSummary,
+    getStudentTimeTable,
+    overallPercentage,
+    getUserData,
+  } = useAuthStore();
+
+  useEffect(() => {
+    getStudentAttendanceSummary();
+    getStudentTimeTable();
+    getUserData();
+  }, [getStudentAttendanceSummary, getStudentTimeTable,getUserData]);
+
+
+  console.log(userData)
+  // ✅ Glow ring style for attendance
+  const getRingStyle = (percentage) => {
+    const isLow = percentage < 75;
+    const ringColor = isLow ? '#ef4444' : '#10b981'; // red / green
+    return {
+      borderColor: ringColor,
+      boxShadow: `0 0 6px ${ringColor}, 0 0 12px ${ringColor}`,
+    };
+  };
+
   return (
-  
-    <div className={`p-6 bg-gray-800 min-h-screen text-white transition-all duration-300  ${sideBarOpen ? 'ml-56' : 'ml-20'}`}>
-      {/* Title */}
+    <div className={`p-6 bg-gray-800 min-h-screen text-white transition-all duration-300 ${sideBarOpen ? 'ml-56' : 'ml-20'}`}>
       <h1 className="text-2xl font-bold text-center mb-6">STUDENT DASHBOARD</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -35,16 +61,21 @@ function StudentDashboard() {
             <div>
               <p className="text-sm text-gray-300">Overall</p>
               <h2 className="font-bold text-lg">Attendance</h2>
-              <p className="mt-2 text-2xl">0%</p>
+              <p className="mt-2 text-2xl">{overallPercentage || 0}%</p>
             </div>
-            <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center text-sm">0%</div>
+            <div
+              className="w-12 h-12 rounded-full border-4 flex items-center justify-center text-sm text-white"
+              style={getRingStyle(overallPercentage || 0)}
+            >
+              {overallPercentage || 0}%
+            </div>
           </div>
 
           <div className="bg-gray-600 p-4 rounded shadow flex justify-between items-center">
             <div>
               <p className="text-sm text-gray-300">Current</p>
               <h2 className="font-bold text-lg">CGPA</h2>
-              <p className="mt-2 text-2xl">8.96</p>
+              <p className="mt-2 text-2xl">{userData?.cgpa || 0.0}</p>
             </div>
             <span className="text-3xl">🎯</span>
           </div>
@@ -52,14 +83,14 @@ function StudentDashboard() {
 
         {/* Profile Section */}
         <div className="bg-gray-600 p-4 rounded shadow text-sm">
-          <h2 className="text-lg font-bold">Karan Patil</h2>
-          <p className="text-gray-300 mt-1">+91 9307607903</p>
-          <p className="text-gray-300">1000018766@dit.edu.in</p>
-          <p className="mt-2 text-gray-200">Bachelor of Technology in Computer Science and Engineering</p>
+          <h2 className="text-lg font-bold">{userData?.name || 'Student Name'}</h2>
+          <p className="text-gray-300 mt-1">{userData?.phone || 'N/A'}</p>
+          <p className="text-gray-300">{userData?.email || 'N/A'}</p>
+          <p className="mt-2 text-gray-200">{userData?.course || 'Course Info'}</p>
           <hr className="my-3 border-gray-400" />
-          <p><strong>ERP ID:</strong> 1000018766</p>
-          <p><strong>Roll No:</strong> 220102555</p>
-          <p><strong>Intake Year:</strong> 2022</p>
+          <p><strong>ERP ID:</strong> {userData?._id}</p>
+          <p><strong>Roll No:</strong> {userData?.rollNumber}</p>
+          <p><strong>Intake Year:</strong> {userData?.year || 'N/A'}</p>
           <p><strong>Mentor:</strong> Not Yet Assigned</p>
           <button className="btn btn-sm mt-4 text-white border border-white hover:bg-white hover:text-gray-800">View details</button>
         </div>
@@ -73,30 +104,45 @@ function StudentDashboard() {
             <h2 className="font-bold text-lg">Today's Timetable</h2>
             <CalendarDays className="text-gray-300" />
           </div>
-          <div className="text-center text-gray-300 py-6">No Classes Today</div>
+
+          {Array.isArray(timetable) && timetable.length > 0 ? (
+            timetable.map((item, index) => (
+              <div key={index} className="border-b border-gray-500 py-2">
+                <p className="font-semibold text-blue-300">
+                  {item.subjectId?.name || 'Unknown Subject'}
+                </p>
+                <p className="text-sm">{item.day} | {item.startTime} - {item.endTime}</p>
+                <p className="text-xs text-yellow-300">Room: {item.room}</p>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-300 py-6">No Classes Today</div>
+          )}
         </div>
 
         {/* Attendance */}
         <div className="bg-gray-600 p-4 rounded shadow">
           <h2 className="font-bold text-lg mb-2">My Attendance</h2>
 
-          <div className="flex justify-between items-center border-b border-gray-500 py-2">
-            <div>
-              <p className="font-semibold text-blue-300">CSF307</p>
-              <p className="text-sm">Technical Training 2</p>
-              <p className="text-xs text-yellow-300">Pooja Gupta</p>
-            </div>
-            <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center text-sm">0%</div>
-          </div>
-
-          <div className="flex justify-between items-center py-2">
-            <div>
-              <p className="font-semibold text-blue-300">MEF483</p>
-              <p className="text-sm">Entrepreneurship and Start-ups</p>
-              <p className="text-xs text-yellow-300">Moumita Ghosh</p>
-            </div>
-            <div className="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center text-sm">0%</div>
-          </div>
+          {Array.isArray(attendance) && attendance.length > 0 ? (
+            attendance.map((item, index) => (
+              <div key={index} className="flex justify-between items-center border-b border-gray-500 py-2">
+                <div>
+                  <p className="font-semibold text-blue-300">{item.subjectCode || 'Code'}</p>
+                  <p className="text-sm">{item.subjectName || 'Subject Name'}</p>
+                  <p className="text-xs text-yellow-300">{item.facultyName || 'Faculty'}</p>
+                </div>
+                <div
+                  className="w-12 h-12 rounded-full border-4 flex items-center justify-center text-sm text-white"
+                  style={getRingStyle(item.attendancePercentage || 0)}
+                >
+                  {item.attendancePercentage || 0}%
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-300 py-6">No attendance records available</div>
+          )}
         </div>
       </div>
 

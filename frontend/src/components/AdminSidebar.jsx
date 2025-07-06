@@ -1,13 +1,18 @@
 import React from 'react';
-import { User, Users, Building2, Book, Landmark, Calendar, ScrollText, LogOut, Airplay } from 'lucide-react';
+import { Users, Building2, Book, Landmark, Calendar, ScrollText, LogOut, Airplay } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
 function AdminSidebar() {
-  const { sideBarOpen, setSidebarOpen ,logout} = useAuthStore();
+  const { sideBarOpen, setSidebarOpen, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const navItemClasses = 'flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/sign-in');
+  };
 
   return (
     <div
@@ -21,10 +26,12 @@ function AdminSidebar() {
     >
       {/* === Brand === */}
       <div className="menu space-y-2 w-full">
-        <div className="flex items-center gap-2 mb-4 mt-1">
-          <Airplay className={`w-6 h-6 text-primary ${sideBarOpen ? '' : 'ml-2'}`} />
-          {sideBarOpen && <span className="text-white text-lg font-bold">NextGen-ERP</span>}
-        </div>
+        <NavLink to="/admin/dashboard">
+          <div className="flex items-center gap-2 mb-4 mt-1">
+            <Airplay className={`w-6 h-6 text-primary ${sideBarOpen ? '' : 'ml-2'}`} />
+            {sideBarOpen && <span className="text-white text-lg font-bold">NextGen-ERP</span>}
+          </div>
+        </NavLink>
 
         {sideBarOpen && <hr className="border-white/40 mb-2" />}
 
@@ -70,7 +77,7 @@ function AdminSidebar() {
       {/* === Logout === */}
       <div
         className="flex items-center p-2 rounded-md hover:bg-red-600 cursor-pointer bg-primary transition-colors duration-200"
-        onClick={ logout()}
+        onClick={handleLogout}
       >
         <LogOut className="w-5 h-5 text-white" />
         {sideBarOpen && <span className="text-base font-bold text-white ml-2">Logout</span>}

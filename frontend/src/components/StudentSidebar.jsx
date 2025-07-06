@@ -7,7 +7,15 @@ function StudentSidebar() {
   const { sideBarOpen, setSidebarOpen, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const navItemClasses = 'flex items-center p-2 rounded-md hover:bg-base-200 cursor-pointer';
+  const navItemClasses = ({ isActive }) =>
+    `flex items-center p-2 rounded-md cursor-pointer transition-colors duration-200 ${
+      isActive ? 'bg-primary text-white' : 'hover:bg-base-200 text-gray-300'
+    }`;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/sign-in');
+  };
 
   return (
     <div
@@ -20,15 +28,17 @@ function StudentSidebar() {
       onMouseLeave={() => setSidebarOpen()}
     >
       {/* === Top === */}
-      <div className="menu space-y-2 w-full">
+      <NavLink to="/dashboard">
         <div className="flex items-center gap-2 mb-4 mt-1">
           <Airplay className={`w-6 h-6 text-primary ${sideBarOpen ? '' : 'ml-2'}`} />
           {sideBarOpen && <span className="text-white text-lg font-bold">NextGen-ERP</span>}
         </div>
+      </NavLink>
 
-        {sideBarOpen && <hr className="border-white/40 mb-2" />}
+      {sideBarOpen && <hr className="border-white/40 mb-2" />}
 
-        {/* === Menu Items === */}
+      {/* === Menu Items === */}
+      <div className="menu space-y-2 w-full">
         <NavLink to="/profile" className={navItemClasses}>
           <User className="w-5 h-5 text-primary mr-2" />
           {sideBarOpen && <span className="text-base font-bold">Profile</span>}
@@ -39,7 +49,7 @@ function StudentSidebar() {
           {sideBarOpen && <span className="text-base font-bold">Courses</span>}
         </NavLink>
 
-        <NavLink to="/dashboard" className={navItemClasses}>
+        <NavLink to="/my-grades" className={navItemClasses}>
           <Clipboard className="w-5 h-5 text-primary mr-2" />
           {sideBarOpen && <span className="text-base font-bold">Grades</span>}
         </NavLink>
@@ -55,16 +65,15 @@ function StudentSidebar() {
         </NavLink>
       </div>
 
-      {/* === Spacer === */}
       <div className="flex-grow" />
 
       {/* === Logout === */}
       <div
         className="flex items-center p-2 rounded-md hover:bg-red-600 cursor-pointer bg-primary transition-colors duration-200"
-        onClick={() => navigate('/sign-in')}
+        onClick={handleLogout}
       >
         <LogOut className="w-5 h-5 text-white" />
-        {sideBarOpen && <span className="text-base font-bold text-white ml-2" onClick={() => logout()}>Logout</span>}
+        {sideBarOpen && <span className="text-base font-bold text-white ml-2">Logout</span>}
       </div>
     </div>
   );
