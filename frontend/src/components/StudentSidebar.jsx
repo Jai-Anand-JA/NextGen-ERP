@@ -14,7 +14,7 @@ function StudentSidebar() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/sign-in');
+    window.location.reload(); // Force full page reload after logout
   };
 
   return (

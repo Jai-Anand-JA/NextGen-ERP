@@ -14,6 +14,11 @@ function FacultyCourses() {
   } = useAuthStore();
 
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+
+  const toggleChat = () => {
+    setShowChat((prev) => !prev);
+  };
 
   useEffect(() => {
     getFacultySubjects();
@@ -147,6 +152,32 @@ function FacultyCourses() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Floating Chat Toggle Button */}
+      <button
+        onClick={toggleChat}
+        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg"
+      >
+        {showChat ? "❌" : "💬"}
+      </button>
+
+      {/* Chatbot Iframe */}
+      {showChat && (
+        <iframe
+          src="https://www.chatbase.co/chatbot-iframe/5XPrD6vPJiNaCoc56zFDH"
+          width="350"
+          height="500"
+          style={{
+            position: "fixed",
+            bottom: "80px",
+            right: "20px",
+            border: "none",
+            borderRadius: "12px",
+            zIndex: 1000,
+          }}
+          allow="microphone; camera"
+        />
       )}
     </div>
   );

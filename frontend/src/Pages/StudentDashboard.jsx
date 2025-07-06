@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import NoticeBoard from '../components/NoticeBoard';
@@ -17,20 +17,22 @@ function StudentDashboard() {
     notices
   } = useAuthStore();
 
-  console.log("User Notices", notices );
+  const [showChat, setShowChat] = useState(false);
+
+  const toggleChat = () => {
+    setShowChat(prev => !prev);
+  };
+
   useEffect(() => {
     getStudentAttendanceSummary();
     getStudentTimeTable();
     getNotices();
     getUserData();
-  }, [getStudentAttendanceSummary, getStudentTimeTable,getUserData]);
+  }, [getStudentAttendanceSummary, getStudentTimeTable, getUserData]);
 
-
-  console.log(userData)
-  // ✅ Glow ring style for attendance
   const getRingStyle = (percentage) => {
     const isLow = percentage < 75;
-    const ringColor = isLow ? '#ef4444' : '#10b981'; // red / green
+    const ringColor = isLow ? '#ef4444' : '#10b981';
     return {
       borderColor: ringColor,
       boxShadow: `0 0 6px ${ringColor}, 0 0 12px ${ringColor}`,
@@ -42,7 +44,6 @@ function StudentDashboard() {
       <h1 className="text-2xl font-bold text-center mb-6">STUDENT DASHBOARD</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-4 lg:col-span-2">
           <div className="bg-gray-600 p-4 rounded shadow flex justify-between items-center">
             <div>
@@ -86,7 +87,6 @@ function StudentDashboard() {
           </div>
         </div>
 
-        {/* Profile Section */}
         <div className="bg-gray-600 p-4 rounded shadow text-sm">
           <h2 className="text-lg font-bold">{userData?.name || 'Student Name'}</h2>
           <p className="text-gray-300 mt-1">{userData?.phone || 'N/A'}</p>
@@ -101,9 +101,7 @@ function StudentDashboard() {
         </div>
       </div>
 
-      {/* Timetable & Attendance */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        {/* Timetable */}
         <div className="bg-gray-600 p-4 rounded shadow">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-bold text-lg">Today's Timetable</h2>
@@ -125,10 +123,8 @@ function StudentDashboard() {
           )}
         </div>
 
-        {/* Attendance */}
         <div className="bg-gray-600 p-4 rounded shadow">
           <h2 className="font-bold text-lg mb-2">My Attendance</h2>
-
           {Array.isArray(attendance) && attendance.length > 0 ? (
             attendance.map((item, index) => (
               <div key={index} className="flex justify-between items-center border-b border-gray-500 py-2">
@@ -151,7 +147,34 @@ function StudentDashboard() {
         </div>
       </div>
 
-     <NoticeBoard  notices={notices} />
+      {/* Notice Board */}
+      <NoticeBoard notices={notices} />
+
+      {/* Floating Chat Toggle Button */}
+      <button
+        onClick={toggleChat}
+        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg"
+      >
+        {showChat ? '❌' : '💬'}
+      </button>
+
+      {/* Chatbot Iframe */}
+      {showChat && (
+        <iframe
+          src="https://www.chatbase.co/chatbot-iframe/5XPrD6vPJiNaCoc56zFDH"
+          width="350"
+          height="500"
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            right: '20px',
+            border: 'none',
+            borderRadius: '12px',
+            zIndex: 1000,
+          }}
+          allow="microphone; camera"
+        />
+      )}
     </div>
   );
 }
