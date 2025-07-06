@@ -348,6 +348,83 @@ const useAuthStore = create((set, get) => ({
       set({ isLoading: false });
     }
   },
+
+getStudentFee: async (studentId) => {
+  try {
+    const res = await axiosInstance.get(`/api/admin/student-fee/${studentId}`);
+    if (res.status === 200) {
+      return res.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch fee:", error.message);
+    return null;
+  }
+},
+createFeeForStudent: async ({ studentId, semester, totalAmount }) => {
+  try {
+    const res = await axiosInstance.post("/api/admin/create-fee", {
+      studentId,
+      semester,
+      totalAmount,
+    });
+
+    if (res.status === 201) {
+      toast.success("Fee created successfully");
+      return res.data;
+    }
+  } catch (error) {
+    console.error("Failed to create fee:", error.message);
+    toast.error("Failed to create fee");
+    return null;
+  }
+},
+
+updateFeeForStudent: async ({ studentId, semester, totalAmount }) => {
+  try {
+    const res = await axiosInstance.put(`/api/admin/update-fee/${studentId}`, {
+      studentId,
+      semester,
+      totalAmount,
+    });
+
+    if (res.status === 200) {
+      toast.success("Fee updated successfully");
+      return res.data;
+    }
+  } catch (error) {
+    console.error("Failed to update fee:", error.message);
+    toast.error("Failed to update fee");
+    return null;
+  }
+},
+
+getAllFeesForStudent: async (studentId) => {
+  try {
+    const res = await axiosInstance.get(`/api/admin/get-fees?studentId=${studentId}`);
+    if (res.status === 200) {
+      return res.data;
+    }
+    return [];
+  } catch (error) {
+    console.error("Failed to fetch all fees for student:", error.message);
+    toast.error("Failed to fetch fee records");
+    return [];
+  }
+},
+getMyFees: async () => {
+  try {
+    const res = await axiosInstance.get("/api/student/my-fees");
+    if (res.status === 200) {
+      return res.data; // should be an array of fee records
+    }
+    return [];
+  } catch (error) {
+    console.error("Failed to fetch your fees:", error.message);
+    toast.error("Failed to load your fee records");
+    return [];
+  }
+},
 }));
 
 export default useAuthStore;

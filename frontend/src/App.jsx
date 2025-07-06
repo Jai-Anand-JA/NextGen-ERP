@@ -10,6 +10,7 @@ import { MyAttendance } from "./Pages/MyAttendance.jsx";
 import ProfilePage from "./Pages/StudentProfiePage.jsx";
 import MyAttendanceHistory from "./Pages/MyAttendanceHistory.jsx";
 import MyGrades from "./Pages/MyGrades.jsx";
+import StudentFees from "./Pages/StudentFees.jsx";
 
 // Admin Pages
 import AdminDashboard from "./Pages/AdminDashboard.jsx";
@@ -19,6 +20,7 @@ import ManageFaculty from "./Pages/ManageFaculty.jsx";
 import ManageDepartment from "./Pages/Managedepartment.jsx";
 import ManageTimeTable from "./Pages/ManageTimeTable.jsx";
 import ManageNotices from "./Pages/ManageNotices.jsx";
+import ManageFees from "./Pages/ManageFees.jsx";
 
 // Faculty Pages
 import FacultyDashboard from "./Pages/FacultyDashboard.jsx";
@@ -39,7 +41,8 @@ import FacultySidebar from "./components/FacultySidebar.jsx";
 import useAuthStore from "./store/authStore.js";
 
 function App() {
-  const { checkAuth, userrole, isCheckingAuth ,isAuthenticated} = useAuthStore();
+  const { checkAuth, userrole, isCheckingAuth, isAuthenticated } =
+    useAuthStore();
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -82,6 +85,15 @@ function App() {
               <ProtectedRoute role="Student">
                 <StudentSidebar />
                 <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fees"
+            element={
+              <ProtectedRoute role="Student">
+                <StudentSidebar />
+                <StudentFees />
               </ProtectedRoute>
             }
           />
@@ -181,7 +193,7 @@ function App() {
             element={
               <ProtectedRoute role="Admin">
                 <AdminSidebar />
-                <h1 className="ml-20 p-4 text-white">Fees Management</h1>
+                <ManageFees />
               </ProtectedRoute>
             }
           />

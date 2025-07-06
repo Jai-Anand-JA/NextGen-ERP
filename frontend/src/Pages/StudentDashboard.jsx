@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { CalendarDays } from 'lucide-react';
 import useAuthStore from '../store/authStore';
+import NoticeBoard from '../components/NoticeBoard';
 
 function StudentDashboard() {
   const {
@@ -12,11 +13,15 @@ function StudentDashboard() {
     getStudentTimeTable,
     overallPercentage,
     getUserData,
+    getNotices,
+    notices
   } = useAuthStore();
 
+  console.log("User Notices", notices );
   useEffect(() => {
     getStudentAttendanceSummary();
     getStudentTimeTable();
+    getNotices();
     getUserData();
   }, [getStudentAttendanceSummary, getStudentTimeTable,getUserData]);
 
@@ -146,14 +151,7 @@ function StudentDashboard() {
         </div>
       </div>
 
-      {/* Notices */}
-      <div className="bg-gray-600 p-4 rounded shadow mt-6">
-        <div className="tabs text-white">
-          <a className="tab tab-bordered tab-active">Notice</a>
-          <a className="tab tab-bordered">Exam Notice</a>
-        </div>
-        <div className="text-center text-gray-300 py-6">Coming Soon...</div>
-      </div>
+     <NoticeBoard  notices={notices} />
     </div>
   );
 }
