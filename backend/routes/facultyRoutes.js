@@ -33,6 +33,7 @@ router.put('/attendance/update', updateAttendance);
 
 
 router.post('/grades/assign', assignGrade);
+router.get('/grades/:id', getGradesBySubject); // id = subjectId
 router.put('/grades/:id', updateGrade); // id = gradeId
 router.get('/grades/subject/:id', getGradesBySubject); // id = subjectId
 router.get('/grades/student/:id', getGradesByStudent); // id = studentId

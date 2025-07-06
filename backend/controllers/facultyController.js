@@ -1,4 +1,4 @@
-
+import mongoose from 'mongoose';
 import Attendance from '../models/attendanceModel.js';
 import Student from '../models/studentModel.js';
 import Subject from '../models/subjectModel.js';
@@ -21,18 +21,16 @@ export const getFacultySubjects = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
-
 export const getStudentsBySubjectAndFaculty = async (req, res) => {
-  const {id: subjectId} = req.params;
-    const facultyId = req.user.id; // assuming req.user is available from auth middleware
+  const { id: subjectId } = req.params;
+  const facultyId = req.user.id;
 
   try {
     if (!subjectId || !facultyId) {
       return res.status(400).json({ message: 'Subject ID and Faculty ID are required' });
     }
 
-    // Validate: faculty must be assigned to this subject
+    // Check if this faculty is assigned to the subject
     const subject = await Subject.findOne({
       _id: subjectId,
       faculty: { $in: [facultyId] }
@@ -42,22 +40,77 @@ export const getStudentsBySubjectAndFaculty = async (req, res) => {
       return res.status(403).json({ message: 'Faculty is not assigned to this subject' });
     }
 
-    // Find students enrolled in that subject
+    // Fetch students enrolled in the subject
     const students = await Student.find({ subjects: subjectId })
       .select('name email rollNumber department class section');
 
-    if (!students.length) {
-      return res.status(404).json({ message: 'No students found for this subject' });
-    }
+    // Fetch attendance summary
+    const attendanceSummary = await Attendance.aggregate([
+      {
+        $match: {
+          subjectId: new mongoose.Types.ObjectId(subjectId),
+          facultyId: new mongoose.Types.ObjectId(facultyId)
+        }
+      },
+      {
+        $group: {
+          _id: "$studentId",
+          totalClasses: { $sum: 1 },
+          presents: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Present"] }, 1, 0]
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          attendancePercentage: {
+            $multiply: [
+              { $divide: ["$presents", "$totalClasses"] },
+              100
+            ]
+          }
+        }
+      }
+    ]);
 
-    res.status(200).json(students);
+    // Create a map for quick lookup
+    const attendanceMap = {};
+    attendanceSummary.forEach((entry) => {
+      attendanceMap[entry._id.toString()] = {
+        totalClasses: entry.totalClasses,
+        presents: entry.presents,
+        attendancePercentage: Math.round(entry.attendancePercentage * 10) / 10 // round to 1 decimal
+      };
+    });
+
+    // Merge attendance into student data
+    const enrichedStudents = students.map((student) => {
+      const summary = attendanceMap[student._id.toString()] || {
+        totalClasses: 0,
+        presents: 0,
+        attendancePercentage: 0
+      };
+
+      return {
+        _id: student._id,
+        name: student.name,
+        email: student.email,
+        rollNumber: student.rollNumber,
+        department: student.department,
+        class: student.class,
+        section: student.section,
+        ...summary
+      };
+    });
+
+    res.status(200).json(enrichedStudents);
   } catch (error) {
-    console.error('Error fetching students by subject and faculty:', error);
+    console.error('Error fetching students with attendance summary:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
-
 
 
 
@@ -452,3 +505,4 @@ export const getNoticesForFaculty = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
