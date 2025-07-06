@@ -6,6 +6,7 @@ import {
   getStudentGrades,
   getStudentTimeTable,
   getStudentNotices,
+  getMyFees
 } from '../controllers/studentController.js';
 
 import { authMiddleware } from '../middleware/authMiddleware.js';
@@ -28,5 +29,6 @@ router.get('/grades', getStudentGrades);
 router.get('/timetable', getStudentTimeTable);
 
 router.get('/notices', getStudentNotices);
+router.get('/my-fees',  getMyFees);
 
 export default router;

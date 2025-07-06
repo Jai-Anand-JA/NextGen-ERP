@@ -4,6 +4,7 @@ import Grade from "../models/gradeModel.js";
 import TimeTable from "../models/timeTableModel.js";
 import Notice from "../models/noticeModel.js";
 import mongoose from "mongoose";
+import Fee from "../models/feesModel.js"; // Import the Fee model
 
 export const getstudentSubjects = async (req, res) => {
   const studentId = req.user.id;
@@ -232,12 +233,46 @@ export const getStudentNotices = async (req, res) => {
     }
 
     const notices = await Notice.find({
-      audience: { $in: ["All", "Students"] },
+      noticeFor: { $in: ["All", "Students"] },
     }).sort({ createdAt: -1 });
 
     res.status(200).json(notices);
   } catch (error) {
     console.error("Error fetching student notices:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+export const getStudentFees = async (req, res) => {
+  const studentId = req.user.id; // set by auth middleware
+
+  try {
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({ message: "Invalid student ID" });
+    }
+
+    // Fetch all fee records for the student
+    const fees = await Fee.find({ student: studentId }).populate('student', 'name email'); // optional populate
+
+    if (!fees.length) {
+      return res.status(404).json({ message: "No fee records found for this student" });
+    }
+
+    res.status(200).json(fees);
+  } catch (error) {
+    console.error("Error fetching student fees:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getMyFees = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const fees = await Fee.find({ studentId }).sort({ createdAt: -1 });
+    res.status(200).json(fees);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch fee records" });
   }
 };

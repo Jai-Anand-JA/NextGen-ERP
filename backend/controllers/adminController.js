@@ -5,6 +5,7 @@ import Subject from '../models/subjectModel.js';
 import Department from '../models/departmentModel.js';
 import Notice from '../models/noticeModel.js';
 import TimeTable from '../models/timeTableModel.js';
+import Fee from '../models/feesModel.js';
 import bcrypt from 'bcrypt';
 
 export const createStudent = async (req, res) => {
@@ -453,3 +454,73 @@ export const updateStudentSubjects = async (req, res) => {
     }
 }
 
+
+export const createfeeforStudent = async (req, res) => {
+    const { studentId, totalAmount, semester } = req.body;
+
+    try {
+        const student = await Student.findById(studentId);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        const fee = new Fee({
+            studentId: studentId,
+            totalAmount,
+            semester,
+            paidAmount: 0, // Initially no amount is paid
+            status: 'Unpaid', // Initial status
+        });
+        await fee.save();
+        res.status(201).json({ message: 'Fee created successfully', fee });
+    } catch (error) {
+        console.error('Error creating fee:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+export const getFeesByStudent = async (req, res) => {
+    const { id: studentId } = req.params;
+
+    try {
+        const fees = await Fee.find({ studentId: studentId });
+        if (!fees.length) {
+            return res.status(404).json({ message: 'No fees found for this student' });
+        }
+        res.status(200).json(fees);
+    } catch (error) {
+        console.error('Error fetching fees:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const updateFee = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { semester, totalAmount } = req.body;
+
+    const updated = await Fee.findOneAndUpdate(
+      { studentId },
+      { semester, totalAmount },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "Fee not found" });
+
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// controller
+export const getFeeByStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const fee = await Fee.findOne({ studentId });
+    if (!fee) return res.status(404).json({ message: "Fee not found" });
+    res.status(200).json(fee);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
